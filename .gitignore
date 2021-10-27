@@ -1,0 +1,28 @@
+# Dependencies
+node_modules
+
+# Use yarn.lock instead
+package-lock.json
+
+# Environment varibales
+.env*
+!.env*.example
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Documentation
+docs
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Coverage directory used by tools like istanbul
+coverage
+
+# Optional npm cache directory
+.npm
