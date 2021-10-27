@@ -8,20 +8,7 @@ package-lock.json
 .env*
 !.env*.example
 
-# Logs
-logs
-*.log
-npm-debug.log*
-
-# Documentation
-docs
-
-# Runtime data
-pids
-*.pid
-*.seed
-
-# Coverage directory used by tools like istanbul
+# Code coverage
 coverage
 
 # Optional npm cache directory
