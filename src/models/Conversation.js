@@ -8,4 +8,4 @@ const ConversationSchema = new mongoose.Schema({
     delete_by: { type: Array }
 }, { timestamps: true });
 
-module.exports = mongoose.model("Conversation", ConversationSchema);
+module.exports = mongoose.model("Conversations", ConversationSchema);

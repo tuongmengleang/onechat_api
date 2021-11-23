@@ -10,7 +10,7 @@ exports.index = async (req, res) => {
 
         const conversations = await Conversation.find({
             participants: { $in:[req.params.user_id] }
-        }).sort({ timestamp: -1 });
+        }).sort({ timestamp: -1 }).cache({ expire: 10 });
 
         res.status(200).json({ conversations });
 
@@ -53,7 +53,7 @@ exports.update = async (req, res) => {
         const update = req.body;
 
         const conversation = await Conversation.findByIdAndUpdate(conversation_id, { $set: update }, { new: true });
-        res.status(200).json({ message: 'User has been updated', conversation });
+        res.status(200).json({ message: 'Conversation has been updated', conversation });
 
     } catch (error) {
         res.status(500).json({ message: error.message });

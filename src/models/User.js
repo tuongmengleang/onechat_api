@@ -5,9 +5,9 @@ const jwt = require('jsonwebtoken');
 // const Token = require('./Token');
 
 const UserSchema = new mongoose.Schema({
+    user_id: { type: String, unique: true },
     first_name: { type: String, max: 255 },
     last_name: { type: String, max: 255 },
-    user_name: { type: String, max: 255 },
     email: { type: String, unique: true },
     phone: { type: String, max: 150 },
     password: { type: String, max: 255 },
@@ -15,28 +15,24 @@ const UserSchema = new mongoose.Schema({
     image: { type: String },
     is_active: { type: Boolean, default: true },
     last_active: { type: Date },
-    token: { type: String }
 }, { timestamps: true });
 
-UserSchema.methods.comparePassword = function(password) {
-    return bcrypt.compareSync(password, this.password);
+// Virtual for user's full name
+UserSchema.virtual('full_name')
+    .get(() => {
+        return this.first_name + ' ' + this.last_name;
+    });
+
+/**
+ * Check if email is taken
+ * @param {string} user_id - The user's id
+ * @param {ObjectId} [excludeUserId] - The id of the user to be excluded
+ * @returns {Promise<boolean>}
+ */
+UserSchema.statics.isUserTaken = async function (user_id, excludeUserId) {
+    const user = await this.findOne({ user_id, _id: { $ne: excludeUserId } });
+    return !!user;
 };
 
-UserSchema.methods.generateJWT = function () {
-    const today = new Date();
-    const expirationDate = new Date(today);
-    expirationDate.setDate(today.getDate() + 60);
 
-    let payload = {
-        id: this._id,
-        first_name: this.first_name,
-        last_name: this.last_name,
-        email: this.email,
-    };
-
-    return jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: parseInt(expirationDate.getTime() / 1000, 10)
-    })
-};
-
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model("Users", UserSchema);
