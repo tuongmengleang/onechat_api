@@ -1,3 +1,6 @@
+const httpStatus = require('http-status');
+const ApiError = require('../../../utils/ApiError');
+const catchAsync = require('../../../utils/catchAsync');
 const Conversation = require('../../../models/Conversation');
 
 /**
@@ -5,7 +8,7 @@ const Conversation = require('../../../models/Conversation');
  *  @method GET api/v1/conversation/{user_id}
  *  @access Public
  */
-exports.index = async (req, res) => {
+exports.index = catchAsync(async (req, res) => {
     try {
 
         const conversations = await Conversation.find({
@@ -15,9 +18,9 @@ exports.index = async (req, res) => {
         res.status(200).json({ conversations });
 
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
-};
+});
 
 /**
  *  @desc   Store new conversation
@@ -36,9 +39,9 @@ exports.create = async (req, res) => {
 
     try {
         const result = await conversation.save();
-        res.status(200).json(result);
+        res.status(httpStatus.CREATED).send(result);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
 };
 

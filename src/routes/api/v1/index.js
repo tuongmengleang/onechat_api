@@ -13,7 +13,7 @@ const defaultRoutes = [
         route: authRoute,
     },
     {
-        path: '/conversation',
+        path: '/conversations',
         route: conversationRoute
     },
     {

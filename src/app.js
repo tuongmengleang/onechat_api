@@ -43,8 +43,11 @@ app.use(compression());
 app.use(cors());
 app.options('*', cors());
 
+// app.use(passport.initialize());
+// require("./middlewares/jwt")(passport);
+// jwt authentication
 app.use(passport.initialize());
-require("./middlewares/jwt")(passport);
+require("./config/passport")(passport);
 
 // limit repeated failed requests to auth endpoints
 if (config.env === 'production') {

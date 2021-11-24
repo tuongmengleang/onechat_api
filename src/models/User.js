@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 // const Token = require('./Token');
@@ -32,6 +31,24 @@ UserSchema.virtual('full_name')
 UserSchema.statics.isUserTaken = async function (user_id, excludeUserId) {
     const user = await this.findOne({ user_id, _id: { $ne: excludeUserId } });
     return !!user;
+};
+
+UserSchema.methods.generateAuthToken = function() {
+    const today = new Date();
+    const expirationDate = new Date(today);
+    expirationDate.setDate(today.getDate() + 60);
+
+    let payload = {
+        id: this._id,
+        email: this.email,
+        user_id: this.user_id,
+        first_name: this.first_name,
+        last_name: this.last_name,
+    };
+
+    return jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: parseInt(expirationDate.getTime() / 1000, 10)
+    });
 };
 
 
