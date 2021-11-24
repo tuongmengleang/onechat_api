@@ -3,7 +3,12 @@ const redis = require('redis');
 const util = require('util');
 const config = require('../config/config');
 
-const client = redis.createClient(config.redis_uri);
+//const client = redis.createClient(config.redis_uri);
+const client = redis.createClient({
+   host: '127.0.0.1',
+   no_ready_check: true,
+   auth_pass: "Welcome.1#!",
+});
 client.hget = util.promisify(client.hget);
 
 // create reference for .exec
