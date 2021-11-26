@@ -2,13 +2,21 @@ const mongoose = require('mongoose');
 const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
+const server = require('http').createServer(app);
+const WebSocket = require('ws');
 
-let server;
 mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
     logger.info('Connected to MongoDB');
-    server = app.listen(config.port, () => {
+    server.listen(config.port || 3001, () => {
         logger.info(`Listening to port ${config.port}`);
     });
+
+    //initialize the WebSocket server instance
+    const wss = new WebSocket.Server({ server });
+
+    wss.on('connection', (ws) => {
+        logger.info("A new client connected");
+    })
 });
 
 const exitHandler = () => {

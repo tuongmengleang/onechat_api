@@ -7,7 +7,8 @@ const MessageSchema = new mongoose.Schema({
     text: { type: String, max: 1000000 },
     files: { type: Array },
     link: { type: String, max: 500 },
-    delete_by: { type: Array }
+    delete_by: { type: Array },
+    read_by: { type: Array }
 }, { timestamps: true });
 
 MessageSchema.plugin(mongoosePaginate);

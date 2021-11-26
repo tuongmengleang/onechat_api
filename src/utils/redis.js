@@ -3,12 +3,12 @@ const redis = require('redis');
 const util = require('util');
 const config = require('../config/config');
 
-//const client = redis.createClient(config.redis_uri);
-const client = redis.createClient({
-   host: '127.0.0.1',
-   no_ready_check: true,
-   auth_pass: "Welcome.1#!",
-});
+const client = redis.createClient(config.redis_uri);
+// const client = redis.createClient({
+//    host: '127.0.0.1',
+//    no_ready_check: true,
+//    auth_pass: "Welcome.1#!",
+// });
 client.hget = util.promisify(client.hget);
 
 // create reference for .exec
@@ -43,13 +43,13 @@ mongoose.Query.prototype.exec = async function() {
         client.hset(this.hashKey, key, JSON.stringify(result));
         client.expire(this.hashKey, this.expire);
 
-        // console.log('Return data from MongoDB');
+        console.log('Return data from MongoDB');
         return result;
     }
 
     // return found cachedValue
     const doc = JSON.parse(cacheValue);
-    // console.log('Return data from Redis');
+    console.log('Return data from Redis');
     return Array.isArray(doc)
         ? doc.map(d => new this.model(d))
         : new this.model(doc);

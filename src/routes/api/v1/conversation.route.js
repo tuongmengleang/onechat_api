@@ -7,10 +7,8 @@ const conversationController = require('../../../controllers/api/v1/conversation
 const router = express.Router();
 
 router.route('/')
-    .post(auth, validate(conversationValidation.createConversation), conversationController.create);
-
-router.route('/:user_id')
-    .get(auth, conversationController.index);
+    .post(auth, validate(conversationValidation.createConversation), conversationController.create)
+    .get(auth, conversationController.index)
 
 router.route('/:conversation_id')
     .put(auth, validate(conversationValidation.updateConversation), conversationController.update);

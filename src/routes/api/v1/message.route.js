@@ -1,15 +1,21 @@
 const express = require('express');
 const auth = require('../../../middlewares/auth');
 const validate = require('../../../middlewares/validate');
-const messageController = require('../../../controllers/api/v1/message.controller');
+const MessageController = require('../../../controllers/api/v1/message.controller');
 const messageValidation = require('../../../validations/message.validation');
 
 const router = express.Router();
 
 router.route('/')
-    .post(auth, validate(messageValidation.createMessage), messageController.create);
+    .post(auth, validate(messageValidation.createMessage), MessageController.create);
 
 router.route('/:conversation_id')
-    .get(auth, validate(messageValidation.getMessage), messageController.index);
+    .get(auth, validate(messageValidation.getMessage), MessageController.index)
+
+router.route('/:conversation_id/latest')
+    .get(auth, MessageController.latest)
+
+router.route('/:message_id')
+    .put(auth, MessageController.update);
 
 module.exports = router;
