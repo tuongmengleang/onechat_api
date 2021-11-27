@@ -7,7 +7,7 @@ const conversationRoute = require('./conversation.route');
 const messageRoute = require('./message.route');
 
 const router = express.Router();
-
+ 
 const defaultRoutes = [
     {
         path: '/auth',
