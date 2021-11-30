@@ -15,7 +15,7 @@ exports.index = catchAsync(async (req, res) => {
             participants: { $in:[user_id.toString()] }
         }).sort({ timestamp: -1 }).cache({ expire: 10 });
 
-        res.status(200).json({ conversations });
+        res.status(200).json(conversations);
 
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });

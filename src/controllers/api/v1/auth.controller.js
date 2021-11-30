@@ -3,14 +3,21 @@ const httpStatus = require('http-status');
 const ApiError = require('../../../utils/ApiError');
 const catchAsync = require('../../../utils/catchAsync');
 const { authService } = require('../../../services');
+// const { decrypt } = require('../../../utils/cryptojs');
 
 /**
- *  @desc   Signin User from UVACANCY
+ *  @desc   Log in User from UVACANCY
  *  @method POST
  *  @access Public
  */
-exports.signin = catchAsync(async (req, res) => {
+exports.login = catchAsync(async (req, res) => {
     const { access_token, token } = req.body;
+
+    // let originalAccessToken = decrypt(access_token);
+    // let originalToken = decrypt(token);
+
+    // res.send({ originalAccessToken, originalToken })
+
     await axios.post('https://dev-api.uvacancy.com/api/v1/profile/info', {}, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -19,7 +26,6 @@ exports.signin = catchAsync(async (req, res) => {
     }).then(async (resp) => {
         if (resp.data.code === 200) {
             const user = await authService.loginWithToken(resp.data.data);
-            // const token = await tokenService.generateAuthTokens(user);
             res.status(httpStatus.CREATED).send({ user, token: user.generateAuthToken() });
         }
         else
