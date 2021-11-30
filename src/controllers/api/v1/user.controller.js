@@ -44,7 +44,7 @@ exports.getUser = catchAsync(async (req, res) => {
         if (!user)
             throw new ApiError(httpStatus.NOT_FOUND, 'User not found!');
 
-        res.status(httpStatus.OK).json({ user });
+        res.status(httpStatus.OK).json(user);
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
