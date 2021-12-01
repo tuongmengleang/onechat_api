@@ -5,8 +5,8 @@ const jwt = require('jsonwebtoken');
 
 const UserSchema = new mongoose.Schema({
     user_id: { type: String, unique: true },
-    first_name: { type: String, max: 255 },
-    last_name: { type: String, max: 255 },
+    first_name: { type: String, required: true, max: 255 },
+    last_name: { type: String, required: true, max: 255 },
     email: { type: String, unique: true },
     phone: { type: String, max: 150 },
     password: { type: String, max: 255 },
@@ -18,9 +18,9 @@ const UserSchema = new mongoose.Schema({
 
 // Virtual for user's full name
 UserSchema.virtual('full_name')
-    .get(() => {
-        return this.first_name + ' ' + this.last_name;
-    });
+   .get(function () {
+   return this.first_name + ' ' + this.last_name; 
+});
 
 /**
  * Check if email is taken
@@ -51,5 +51,6 @@ UserSchema.methods.generateAuthToken = function() {
     });
 };
 
+UserSchema.set('toJSON', { getters: true });
 
 module.exports = mongoose.model("Users", UserSchema);

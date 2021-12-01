@@ -1,4 +1,4 @@
-const httpStatus = require('http-status');
+// const httpStatus = require('http-status');
 const Message = require('../models/Message');
 
 /**
@@ -7,14 +7,13 @@ const Message = require('../models/Message');
  * @returns {Promise<Messages>}
  */
 const latestMessage = async (conversation_id) => {
-    const message = await Message.aggregate([
-        { $match: { conversation_id: conversation_id.toString() } },
-        { $sort: { timestamp: 1 } },
+    const latestMessage = await Message.aggregate([
+        { $match: { conversation_id: conversation_id } },
+        { $sort: { 'createdAt': -1 } },
         { $limit: 1 },
-        {$sort: {timestamp:1 }}
     ]);
 
-    return message;
+    return latestMessage;
 };
 
 module.exports = {
