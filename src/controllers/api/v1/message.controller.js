@@ -3,7 +3,7 @@ const catchAsync = require('../../../utils/catchAsync');
 const Message = require('../../../models/Message');
 const getPagination = require('../../../utils/pagination');
 const ApiError = require('../../../utils/ApiError');
-const { messageService } = require('../../../services');
+const { messageService, conversationService } = require('../../../services');
 
 /**
  *  @desc   Store a new message
@@ -20,11 +20,10 @@ exports.create = catchAsync(async (req, res) => {
             text: text
         });
         const result = await newMessage.save();
-
+        // update conversation updatedAt
+        await conversationService.updateConversation(conversation_id);
         // emit socket new message
         global.io.emit("send-message", result);
-
-        // update conversation updatedAt
 
         res.status(httpStatus.CREATED).json({ message: 'Successfully create message', result });
     } catch (error) {

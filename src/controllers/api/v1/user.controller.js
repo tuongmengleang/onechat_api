@@ -1,4 +1,5 @@
 const httpStatus = require('http-status');
+const pick = require('../../../utils/pick');
 const catchAsync = require('../../../utils/catchAsync');
 const ApiError = require('../../../utils/ApiError');
 // const User = require('../../../models/User');
@@ -45,6 +46,21 @@ exports.getUser = catchAsync(async (req, res) => {
             throw new ApiError(httpStatus.NOT_FOUND, 'User not found!');
 
         res.status(httpStatus.OK).json(user);
+    } catch (error) {
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
+    }
+});
+
+/**
+ *  @desc   Search user by name
+ *  @method GET api/v1/users/find
+ *  @access Public
+ */
+exports.getUsers = catchAsync(async (req, res) => {
+    try {
+        const filter = pick(req.query, ['name']);
+        const result = await userService.queryUsers(filter.name);
+        res.send(result);
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }

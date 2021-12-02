@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const User = require('../models/User');
 const ApiError = require('../utils/ApiError');
+const logger = require('../config/logger');
 
 /**
  * Create a user
@@ -15,13 +16,25 @@ const createUser = async (userBody) => {
 };
 
 /**
- * Get all users
- * @returns {Promise<Users>}
+ * Query for users
+ * @param {Object} filter - Mongo filter
+ * @param {Object} options - Query options
+ * @returns {Promise<QueryResult>}
  */
-const queryUsers = async() => {
-    const users = await User.find({});
-
-    return users
+const queryUsers = async (name) => {
+    if (name) {
+        const users = await User.find({
+            "$expr": {
+                "$regexMatch": {
+                    "input": { "$concat": ["$first_name", " ", "$last_name"] },
+                    "regex": name   ,  //Your text search here
+                    "options": "i"
+                }
+            }
+        })
+        return users;
+    }
+    else return [];
 };
 
 /**
@@ -33,8 +46,9 @@ const getUserById = async (id) => {
     return User.findById(id);
 };
 
+
 module.exports = {
     createUser,
     queryUsers,
-    getUserById
+    getUserById,
 };

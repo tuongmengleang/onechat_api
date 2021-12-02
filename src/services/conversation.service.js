@@ -6,7 +6,8 @@ const Conversation = require('../models/Conversation');
  * @returns {Promise<Conversation>}
  */
 const updateConversation = async (conversation_id) => {
-    await Conversation.findOneAndUpdate({ _id: conversation_id })
+    await Conversation.findOneAndUpdate({ _id: conversation_id }, { updatedAt: Date.now() })
+    // console.log("conversation :", conversation)
 };
 
 
