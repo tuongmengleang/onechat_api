@@ -7,6 +7,13 @@ const getUser = {
     }),
 };
 
+const getUsers = {
+    query: Joi.object().keys({
+        name: Joi.string(),
+    }),
+};
+
 module.exports = {
-    getUser
+    getUser,
+    getUsers
 };
