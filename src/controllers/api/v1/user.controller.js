@@ -59,20 +59,29 @@ exports.getUser = catchAsync(async (req, res) => {
 exports.getUsers = catchAsync(async (req, res) => {
     try {
         const filter = pick(req.query, ['name']);
-        const result = await userService.queryUsers(filter.name);
-        // let searchString = new RegExp(filter.name, 'ig');
-        // User.aggregate()
-        //     .project({
-        //         full_name: { $concat: ['$first_name', ' ', '$last_name'] },
-        //         first_name: 1,
-        //         last_name: 1,
-        //     })
-        //     .match({ full_name: searchString })
-        //     .exec(function (err, users) {
-        //         if (err) throw err;
-        //         res.status(200).json(users);
-        //     });
-        res.send(result);
+        // const result = await userService.queryUsers(filter.name);
+
+        let searchString = new RegExp(filter.name, 'ig');
+        if (filter.name) {
+            User.aggregate().project({
+                "full_name": { $concat: ['$first_name', ' ', '$last_name'] },
+                "user_id": 1,
+                "first_name": 1,
+                "last_name": 1,
+                "email": 1,
+                "phone": 1,
+                "type": 1,
+                "image": 1,
+                "is_active": 1,
+                "createdAt": 1,
+                "updatedAt": 1,
+            })
+                .match({ full_name: searchString })
+                .exec(function (err, users) {
+                    if (err) throw err;
+                    res.send(users);
+                });
+        } else res.send([])
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }

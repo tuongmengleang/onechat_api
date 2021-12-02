@@ -14,12 +14,11 @@ const UserSchema = new mongoose.Schema({
     image: { type: String },
     is_active: { type: Boolean, default: true },
     last_active: { type: Date },
-}, { timestamps: true });
+}, { toObject: { virtuals: true }, toJSON: { virtuals: true } },{ timestamps: true });
 
 // Virtual for user's full name
-UserSchema.virtual('full_name')
-   .get(function () {
-   return this.first_name + ' ' + this.last_name; 
+UserSchema.virtual('full_name').get(function () {
+    return [this.first_name, this.last_name].filter(Boolean).join(' ');
 });
 
 /**
@@ -51,6 +50,6 @@ UserSchema.methods.generateAuthToken = function() {
     });
 };
 
-UserSchema.set('toJSON', { getters: true });
+// UserSchema.set('toJSON', { getters: true });
 
 module.exports = mongoose.model("Users", UserSchema);
