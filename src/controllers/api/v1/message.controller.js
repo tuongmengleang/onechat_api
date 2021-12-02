@@ -3,6 +3,7 @@ const catchAsync = require('../../../utils/catchAsync');
 const Message = require('../../../models/Message');
 const getPagination = require('../../../utils/pagination');
 const ApiError = require('../../../utils/ApiError');
+const { messageService } = require('../../../services');
 
 /**
  *  @desc   Store a new message
@@ -19,6 +20,11 @@ exports.create = catchAsync(async (req, res) => {
             text: text
         });
         const result = await newMessage.save();
+
+        // emit socket new message
+        global.io.emit("send-message", result);
+
+        // update conversation updatedAt
 
         res.status(httpStatus.CREATED).json({ message: 'Successfully create message', result });
     } catch (error) {
@@ -84,14 +90,8 @@ exports.update = catchAsync(async (req, res) => {
 exports.latest = catchAsync(async (req, res) => {
     try {
         const conversation_id = req.params.conversation_id;
-
-        const latestMessage = await Message.aggregate([
-            { $match: { conversation_id: conversation_id } },
-            { $sort: { 'createdAt': -1 } },
-            { $limit: 1 },
-        ]);
-
-        res.status(httpStatus.OK).json({ data: latestMessage });
+        const latestMessage = await messageService.latestMessage(conversation_id);
+        res.status(httpStatus.OK).json(latestMessage);
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }

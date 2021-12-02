@@ -3,21 +3,23 @@ const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
 const server = require('http').createServer(app);
-const WebSocket = require('ws');
+const io = require('socket.io')(server, { cors: { origin: '*' } }); // Create socket.io connection
 
 mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
     logger.info('Connected to MongoDB');
     server.listen(config.port || 3001, () => {
         logger.info(`Listening to port ${config.port}`);
     });
-
-    //initialize the WebSocket server instance
-    const wss = new WebSocket.Server({ server });
-
-    wss.on('connection', (ws) => {
-        logger.info("A new client connected");
-    })
 });
+
+// app.use(function(req, res, next){
+//     res.io = io;
+//     next();
+// });
+global.io = io;
+// io.on('connection', (socket) => {
+//     logger.info("a new user connected", socket);
+// });
 
 const exitHandler = () => {
     if (server) {
