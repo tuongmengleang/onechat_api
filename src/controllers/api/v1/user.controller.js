@@ -2,7 +2,7 @@ const httpStatus = require('http-status');
 const pick = require('../../../utils/pick');
 const catchAsync = require('../../../utils/catchAsync');
 const ApiError = require('../../../utils/ApiError');
-// const User = require('../../../models/User');
+const User = require('../../../models/User');
 const { userService } = require('../../../services');
 
 /**
@@ -60,6 +60,18 @@ exports.getUsers = catchAsync(async (req, res) => {
     try {
         const filter = pick(req.query, ['name']);
         const result = await userService.queryUsers(filter.name);
+        // let searchString = new RegExp(filter.name, 'ig');
+        // User.aggregate()
+        //     .project({
+        //         full_name: { $concat: ['$first_name', ' ', '$last_name'] },
+        //         first_name: 1,
+        //         last_name: 1,
+        //     })
+        //     .match({ full_name: searchString })
+        //     .exec(function (err, users) {
+        //         if (err) throw err;
+        //         res.status(200).json(users);
+        //     });
         res.send(result);
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
