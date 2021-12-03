@@ -50,6 +50,4 @@ UserSchema.methods.generateAuthToken = function() {
     });
 };
 
-// UserSchema.set('toJSON', { getters: true });
-
 module.exports = mongoose.model("Users", UserSchema);

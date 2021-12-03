@@ -41,6 +41,8 @@ exports.create = catchAsync(async (req, res) => {
 
     try {
         const result = await conversation.save();
+        // emit socket new conversation
+        global.io.emit("new-conversation");
         res.status(httpStatus.CREATED).send(result);
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });

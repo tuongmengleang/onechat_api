@@ -23,15 +23,18 @@ const createUser = async (userBody) => {
  */
 const queryUsers = async (name) => {
     if (name) {
-        const users = await User.find({
-            "$expr": {
-                "$regexMatch": {
-                    "input": { "$concat": ["$first_name", " ", "$last_name"] },
-                    "regex": name   ,  //Your text search here
-                    "options": "i"
-                }
-            }
-        })
+        // const users = await User.find({
+        //     "$expr": {
+        //         "$regexMatch": {
+        //             "input": { "$concat": ["$first_name", " ", "$last_name"] },
+        //             "regex": name   ,  //Your text search here
+        //             "options": "i"
+        //         }
+        //     }
+        // })
+        const users = await User.aggregate(
+            [ { $match : { full_name : "Kong" } } ]
+        );
         return users;
     }
     else return [];
