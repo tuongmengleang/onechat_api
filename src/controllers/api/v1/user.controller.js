@@ -82,6 +82,7 @@ exports.getUsers = catchAsync(async (req, res) => {
                     res.send(users);
                 });
         } else res.send([])
+        // res.send(result)
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
