@@ -49,9 +49,19 @@ const getUserById = async (id) => {
     return User.findById(id);
 };
 
+/**
+ * Update user status active (online)
+ * @param {ObjectId} _id
+ * @param {Boolean} is_active
+ * @returns {Promise<User>}
+ */
+const updateUserStatus = async (_id, is_active) => {
+    await User.findByIdAndUpdate(_id, { is_active: is_active, last_active: Date.now() });
+};
 
 module.exports = {
     createUser,
     queryUsers,
     getUserById,
+    updateUserStatus
 };

@@ -97,6 +97,21 @@ exports.latest = catchAsync(async (req, res) => {
     }
 });
 
+/**
+ *  @desc   Get unread message of conversation
+ *  @method GET api/v1/messages/conversation_id/unread
+ *  @access Public
+ */
+exports.unread = catchAsync(async (req, res) => {
+    try {
+        const conversation_id = req.params.conversation_id;
+        const messages = await messageService.getUnread(conversation_id)
+        res.send(messages)
+    } catch (error) {
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
+    }
+});
+
 function unescapeHTML(escapedHTML) {
     return escapedHTML.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
 }
