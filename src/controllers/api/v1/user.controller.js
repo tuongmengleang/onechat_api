@@ -65,21 +65,26 @@ exports.getUsers = catchAsync(async (req, res) => {
         if (filter.name) {
             User.aggregate().project({
                 "full_name": { $concat: ['$first_name', ' ', '$last_name'] },
-                "user_id": 1,
-                "first_name": 1,
-                "last_name": 1,
-                "email": 1,
-                "phone": 1,
-                "type": 1,
-                "image": 1,
-                "is_active": 1,
-                "createdAt": 1,
-                "updatedAt": 1,
+                "user_id": true,
+                "first_name": true,
+                "last_name": true,
+                "email": true,
+                "phone": true,
+                "type": true,
+                "image": true,
+                "is_active": true,
+                "createdAt": true,
+                "updatedAt": true,
             })
                 .match({ full_name: searchString })
                 .exec(function (err, users) {
                     if (err) throw err;
-                    res.send(users);
+                    const result = [];
+                    for (let i = 0 ; i < users.length ; i ++) {
+                        if (users[i]._id.toString() !== req.user._id.toString())
+                            result.push(users[i])
+                    }
+                    res.send(result);
                 });
         } else res.send([])
         // res.send(result)
