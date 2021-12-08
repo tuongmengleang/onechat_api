@@ -17,9 +17,20 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
 //     next();
 // });
 global.io = io;
-// io.on('connection', (socket) => {
-//     logger.info("a new user connected", socket);
-// });
+const users = {};
+io.on('connection', (socket) => {
+    // listen on user online from client
+    socket.on('login', (data) => {
+        console.log('a user ' + data.userId + ' connected');
+        // saving userId to object with socket ID
+        users[socket.id] = data.userId;
+    });
+
+    // listen on typing message from client
+    socket.on('typing-message', (data) => {
+        io.emit('display-typing', data);
+    })
+});
 
 const exitHandler = () => {
     if (server) {

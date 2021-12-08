@@ -1,8 +1,9 @@
 const CryptoJS = require("crypto-js");
 const config = require('../config/config');
-
+const key = "leang"
 exports.decrypt = (word) => {
-    let bytes = CryptoJS.AES.decrypt(word, config.encrypt_secret_key);
-    let plaintext = bytes.toString(CryptoJS.enc.Utf8);
-    return JSON.parse(plaintext);
+    // return CryptoJS.HmacSHA1(word, key);
+    var bytes  = CryptoJS.AES.decrypt(word, key).toString(CryptoJS.enc.Utf8);
+    var originalText = bytes.toString(CryptoJS.enc.Utf8);
+    return bytes
 };

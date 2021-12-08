@@ -59,6 +59,7 @@ app.use('/api/v1', routes);
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
     next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
 });
 
