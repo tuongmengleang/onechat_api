@@ -3,8 +3,8 @@ const httpStatus = require('http-status');
 const ApiError = require('../../../utils/ApiError');
 const catchAsync = require('../../../utils/catchAsync');
 const { authService } = require('../../../services');
-// const { decrypt } = require('../../../utils/cryptojs');
-
+const { decrypt } = require('../../../utils/cryptojs');
+const CryptoJS = require("crypto-js");
 /**
  *  @desc   Log in User from UVACANCY
  *  @method POST
@@ -13,9 +13,9 @@ const { authService } = require('../../../services');
 exports.login = catchAsync(async (req, res) => {
     const { access_token, token } = req.body;
 
-    // let originalAccessToken = decrypt(access_token);
-    // let originalToken = decrypt(token);
-
+    // let originalAccessToken = CryptoJS.AES.decrypt(access_token, 'leang').toString(CryptoJS.enc.Utf8)
+    // let originalToken = CryptoJS.AES.decrypt(token, 'leang').toString(CryptoJS.enc.Utf8);
+    //
     // res.send({ originalAccessToken, originalToken })
 
     await axios.post('https://dev-api.uvacancy.com/api/v1/profile/info', {}, {

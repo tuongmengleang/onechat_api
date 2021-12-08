@@ -17,8 +17,9 @@ exports.create = catchAsync(async (req, res) => {
         const newMessage = new Message({
             conversation_id: conversation_id,
             author: author,
-            text: text
+            text: unescapeHTML(text)
         });
+
         const result = await newMessage.save();
         // update conversation updatedAt
         await conversationService.updateConversation(conversation_id);
@@ -95,3 +96,7 @@ exports.latest = catchAsync(async (req, res) => {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
 });
+
+function unescapeHTML(escapedHTML) {
+    return escapedHTML.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
+}
