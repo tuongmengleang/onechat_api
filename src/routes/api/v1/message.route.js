@@ -15,6 +15,9 @@ router.route('/:conversation_id')
 router.route('/:conversation_id/latest')
     .get(auth, MessageController.latest)
 
+router.route('/:conversation_id/unread')
+    .get(auth, MessageController.unread)
+
 router.route('/:message_id')
     .put(auth, MessageController.update);
 

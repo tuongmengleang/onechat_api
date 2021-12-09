@@ -12,7 +12,7 @@ const UserSchema = new mongoose.Schema({
     password: { type: String, max: 255 },
     type: { type: Number, default: 1 },
     image: { type: String },
-    is_active: { type: Boolean, default: true },
+    is_active: { type: Boolean, default: false },
     last_active: { type: Date },
 }, { toObject: { virtuals: true }, toJSON: { virtuals: true } },{ timestamps: true });
 
