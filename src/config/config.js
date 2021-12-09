@@ -13,7 +13,7 @@ const envVarsSchema = Joi.object()
         JWT_SECRET: Joi.string().required().description('JWT secret key'),
         JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(30).description('minutes after which access tokens expire'),
         JWT_REFRESH_EXPIRATION_DAYS: Joi.number().default(30).description('days after which refresh tokens expire'),
-        SECRET_KEY_ENCRYPT_TOKEN: Joi.string().required().description('Secret key encrypt token'),
+        CRYPTO_SECRET_KEY: Joi.string().required().description('Secret key encrypt token'),
     }).unknown();
 
 const { value: envVars, error } = envVarsSchema.prefs({ errors: { label: 'key' } }).validate(process.env);
@@ -38,5 +38,5 @@ module.exports = {
         accessExpirationMinutes: envVars.JWT_ACCESS_EXPIRATION_MINUTES,
         refreshExpirationDays: envVars.JWT_REFRESH_EXPIRATION_DAYS,
     },
-    encrypt_secret_key: envVars.SECRET_KEY_ENCRYPT_TOKEN
+    crypto_secret_key: envVars.CRYPTO_SECRET_KEY
 };

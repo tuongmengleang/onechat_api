@@ -21,42 +21,31 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
 global.io = io;
 const users = {};
 io.on('connection', (socket) => {
-    // listen on user online from client
-    socket.on('login', (data) => {
-        // CHECK IS USER EXHIST
-        if (!users[data.userId]) users[data.userId] = [];
-
-        // PUSH SOCKET ID FOR PARTICULAR USER ID
-        // users[data.userId].push(socket.id);
-        // saving userId to object with socket ID
-        users[socket.id] = data.userId;
-        console.log(users)
-
-        // USER IS ONLINE BROAD CAST TO ALL CONNECTED USERS
-        // io.emit("online", users);
-        // console.log(data.userId, "Is Online!", socket.id);
-
-        // UPDATE USER STATUS ONLINE
-        userService.updateUserStatus(data.userId, true);
-        io.emit("new-conversation");
-    });
+    // socket.on('login', (userId) => {
+    //     // CHECK IS USER EXHIST
+    //     if (!users[userId]) users[userId] = [];
+    //     // PUSH SOCKET ID FOR PARTICULAR USER ID
+    //     users[userId].push(socket.id);
+    //     // USER IS ONLINE BROAD CAST TO ALL CONNECTED USERS
+    //     io.sockets.emit("online", userId);
+    //     userService.updateUserStatus(userId, true)
+    //     io.emit("new-conversation");
+    //     // console.log("list user online :", users)
+    //     // console.log(userId, "Is Online!", socket.id);
+    // })
 
     // listen on typing message from client
     socket.on('typing-message', (data) => {
         io.emit('display-typing', data);
     });
 
-    // DISCONNECT EVENT
-    socket.on('disconnect', (reason) => {
-        // _.remove(users[users[socket.id]], (u) => u === socket.id);
+    // // LISTEN USER DISCONNECTED
+    // socket.on('disconnect', () => {
+    //     socket.broadcast.emit('user-disconnected', users[socket.id])
+    //     delete users[socket.id]
+    //     console.log("list user online :", users)
+    // })
 
-        // UPDATE USER STATUS ONLINE
-        userService.updateUserStatus(users[socket.id], false);
-        io.emit("new-conversation");
-        // remove saved socket from users object
-        delete users[socket.id];
-        console.log(users)
-    })
 });
 
 const exitHandler = () => {
