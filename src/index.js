@@ -14,25 +14,18 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
     });
 });
 
-// app.use(function(req, res, next){
-//     res.io = io;
-//     next();
-// });
 global.io = io;
 const users = {};
 io.on('connection', (socket) => {
-    // socket.on('login', (userId) => {
-    //     // CHECK IS USER EXHIST
-    //     if (!users[userId]) users[userId] = [];
-    //     // PUSH SOCKET ID FOR PARTICULAR USER ID
-    //     users[userId].push(socket.id);
-    //     // USER IS ONLINE BROAD CAST TO ALL CONNECTED USERS
-    //     io.sockets.emit("online", userId);
-    //     userService.updateUserStatus(userId, true)
-    //     io.emit("new-conversation");
-    //     // console.log("list user online :", users)
-    //     // console.log(userId, "Is Online!", socket.id);
-    // })
+    socket.on('online', (userId) => {
+        // CHECK IS USER EXIST
+        if (!users[userId]) users[userId] = []
+        // PUSH SOCKET ID FOR PARTICULAR USER ID
+        users[userId].push(socket.id)
+        socket.userId = userId
+        userService.updateUserStatus(userId, true)
+        // console.info('users: ', users)
+    });
 
     // listen on typing message from client
     socket.on('typing-message', (data) => {
@@ -40,11 +33,20 @@ io.on('connection', (socket) => {
     });
 
     // // LISTEN USER DISCONNECTED
-    // socket.on('disconnect', () => {
-    //     socket.broadcast.emit('user-disconnected', users[socket.id])
-    //     delete users[socket.id]
-    //     console.log("list user online :", users)
-    // })
+    socket.on('disconnect', () => {
+        _.remove(users[socket.userId], (u) => u === socket.id)
+        if (users[socket.userId].length === 0) {
+            // USER IS OFFLINE BROAD CAST TO ALL CONNECTED USERS
+            // UPDATE USER ONLINE STATUS
+            userService.updateUserStatus(socket.userId, false)
+            // io.emit("offline", socket.userId);
+            // REMOVE OBJECT
+            delete users[socket.userId];
+        }
+        socket.disconnect(); // DISCONNECT SOCKET
+
+        // console.info('users: ', users)
+    });
 
 });
 

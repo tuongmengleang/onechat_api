@@ -50,7 +50,7 @@ exports.index = catchAsync(async (req, res) => {
                 // update last messages list read_by
                 if (result.docs.length > 0)
                     for (let i = 0 ; i < result.docs.length ; i ++)
-                        messageService.updateMessageReadBy(result.docs[i]._id, req.user._id)
+                        messageService.updateMessageReadUnread(result.docs[i]._id, true)
                 res.send({
                     messages: result.docs,
                     // last_message: result.docs.slice(-1)[0],

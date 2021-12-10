@@ -8,7 +8,8 @@ const MessageSchema = new mongoose.Schema({
     files: { type: Array },
     link: { type: String, max: 500 },
     delete_by: { type: Array },
-    read_by: { type: Array }
+    read_by: { type: Array },
+    is_read: { type: Boolean, default: false }
 }, { timestamps: true });
 
 MessageSchema.plugin(mongoosePaginate);

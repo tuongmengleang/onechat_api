@@ -57,6 +57,7 @@ const getUserById = async (id) => {
  */
 const updateUserStatus = async (_id, is_active) => {
     await User.findByIdAndUpdate(_id, { is_active: is_active, last_active: Date.now() });
+    global.io.emit('update-user-online', _id);
 };
 
 module.exports = {

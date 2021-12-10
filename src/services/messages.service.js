@@ -6,8 +6,9 @@ const Message = require('../models/Message');
  * @param {ObjectId} id
  * @returns {Promise<Messages>}
  */
-const updateMessageReadBy = async (_id, user_id) => {
-    await Message.update({ _id: _id }, { $addToSet: {read_by: [user_id]} }, { multi: true })
+const updateMessageReadUnread = async (_id, is_read) => {
+    // await Message.update({ _id: _id }, { $addToSet: {read_by: [user_id], $set: { is_read: is_read }} }, { multi: true })
+    await Message.update({ _id: _id }, { $set: { is_read: is_read } }, { multi: true })
 };
 
 /**
@@ -35,7 +36,7 @@ const getUnread = async (conversation_id) => {
 };
 
 module.exports = {
-    updateMessageReadBy,
+    updateMessageReadUnread,
     latestMessage,
     getUnread
 };
