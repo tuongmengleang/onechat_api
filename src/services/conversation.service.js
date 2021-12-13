@@ -10,7 +10,6 @@ const updateConversation = async (conversation_id) => {
     // console.log("conversation :", conversation)
 };
 
-
 module.exports = {
-    updateConversation
+    updateConversation,
 };
