@@ -17,7 +17,8 @@ exports.create = catchAsync(async (req, res) => {
         const newMessage = new Message({
             conversation_id: conversation_id,
             author: author,
-            text: unescapeHTML(text)
+            text: unescapeHTML(text),
+            read_by: [req.user._id]
         });
 
         const result = await newMessage.save();
@@ -46,8 +47,13 @@ exports.index = catchAsync(async (req, res) => {
 
         await Message.paginate({ conversation_id: conversation_id }, { offset, limit, sort: { createdAt: 'desc' } })
             .then((result) => {
-                res.status(200).json({
+                // update last messages list read_by
+                if (result.docs.length > 0)
+                    for (let i = 0 ; i < result.docs.length ; i ++)
+                        messageService.updateMessageReadUnread(result.docs[i]._id, true)
+                res.send({
                     messages: result.docs,
+                    // last_message: result.docs.slice(-1)[0],
                     totalItems: result.totalDocs,
                     totalPages: result.totalPages,
                     currentPage: result.page - 1

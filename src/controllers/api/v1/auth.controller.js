@@ -3,8 +3,7 @@ const httpStatus = require('http-status');
 const ApiError = require('../../../utils/ApiError');
 const catchAsync = require('../../../utils/catchAsync');
 const { authService } = require('../../../services');
-const { decrypt } = require('../../../utils/cryptojs');
-const CryptoJS = require("crypto-js");
+const { decrypt } = require('../../../utils/crypto');
 /**
  *  @desc   Log in User from UVACANCY
  *  @method POST
@@ -13,15 +12,10 @@ const CryptoJS = require("crypto-js");
 exports.login = catchAsync(async (req, res) => {
     const { access_token, token } = req.body;
 
-    // let originalAccessToken = CryptoJS.AES.decrypt(access_token, 'leang').toString(CryptoJS.enc.Utf8)
-    // let originalToken = CryptoJS.AES.decrypt(token, 'leang').toString(CryptoJS.enc.Utf8);
-    //
-    // res.send({ originalAccessToken, originalToken })
-
     await axios.post('https://dev-api.uvacancy.com/api/v1/profile/info', {}, {
         headers: {
-            'Authorization': `Bearer ${access_token}`,
-            'token': token
+            'Authorization': `Bearer ${decrypt(access_token).replace(/['"]+/g, '')}`,
+            'token': decrypt(token).replace(/['"]+/g, '')
         }
     }).then(async (resp) => {
         if (resp.data.code === 200) {

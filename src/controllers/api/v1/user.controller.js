@@ -1,9 +1,11 @@
 const httpStatus = require('http-status');
+const axios = require('axios');
 const pick = require('../../../utils/pick');
 const catchAsync = require('../../../utils/catchAsync');
 const ApiError = require('../../../utils/ApiError');
 const User = require('../../../models/User');
 const { userService } = require('../../../services');
+const { decrypt } = require('../../../utils/crypto');
 
 /**
  *  @desc   Get list of Users
@@ -29,6 +31,47 @@ exports.me = catchAsync(async (req, res) => {
     try {
         const me = req.user;
         res.status(httpStatus.OK).json({ user: me });
+    } catch (error) {
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
+    }
+});
+
+/**
+ *  @desc   Create user reference from uvacancy
+ *  @method POST api/v1/users
+ *  @access Public
+ */
+exports.create = catchAsync(async (req, res) => {
+    try {
+        const { access_token, token, user_name } = req.body;
+        await axios.post('https://dev-api.uvacancy.com/api/v1/profile/info', {
+            user_name: user_name
+        }, {
+            headers: {
+                'Authorization': `Bearer ${decrypt(access_token).replace(/['"]+/g, '')}`,
+                'token': decrypt(token).replace(/['"]+/g, '')
+            }
+        }).then(async (resp) => {
+            if (resp.data.code === 200) {
+                const user = await User.findOne({ user_id: resp.data.data.id });
+                if (!user) {
+                    const newUser = await User.create({
+                        user_id: resp.data.data.id,
+                        first_name: resp.data.data.first_name,
+                        last_name: resp.data.data.last_name,
+                        email: resp.data.data.email ? resp.data.data.email : '',
+                        phone: resp.data.data.phone_number,
+                        image: 'https://dev-api.uvacancy.com/api/v1/media?path=' + resp.data.data.picture_folder + '/small/' + resp.data.data.picture_file_name
+                    })
+                    res.status(httpStatus.OK).json({ user: newUser });
+                }
+                else
+                    res.status(httpStatus.OK).json({ user });
+            }
+            else
+                throw new ApiError(httpStatus.UNAUTHORIZED, resp.data.message);
+        });
+
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }

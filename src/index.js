@@ -14,31 +14,17 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
     });
 });
 
-// app.use(function(req, res, next){
-//     res.io = io;
-//     next();
-// });
 global.io = io;
 const users = {};
 io.on('connection', (socket) => {
-    // listen on user online from client
-    socket.on('login', (data) => {
-        // CHECK IS USER EXHIST
-        if (!users[data.userId]) users[data.userId] = [];
-
+    socket.on('online', (userId) => {
+        // CHECK IS USER EXIST
+        if (!users[userId]) users[userId] = []
         // PUSH SOCKET ID FOR PARTICULAR USER ID
-        // users[data.userId].push(socket.id);
-        // saving userId to object with socket ID
-        users[socket.id] = data.userId;
-        console.log(users)
-
-        // USER IS ONLINE BROAD CAST TO ALL CONNECTED USERS
-        // io.emit("online", users);
-        // console.log(data.userId, "Is Online!", socket.id);
-
-        // UPDATE USER STATUS ONLINE
-        userService.updateUserStatus(data.userId, true);
-        io.emit("new-conversation");
+        users[userId].push(socket.id)
+        socket.userId = userId
+        userService.updateUserStatus(userId, true)
+        // console.info('users: ', users)
     });
 
     // listen on typing message from client
@@ -46,17 +32,22 @@ io.on('connection', (socket) => {
         io.emit('display-typing', data);
     });
 
-    // DISCONNECT EVENT
-    socket.on('disconnect', (reason) => {
-        // _.remove(users[users[socket.id]], (u) => u === socket.id);
+    // // LISTEN USER DISCONNECTED
+    socket.on('disconnect', () => {
+        _.remove(users[socket.userId], (u) => u === socket.id)
+        if (users[socket.userId].length === 0) {
+            // USER IS OFFLINE BROAD CAST TO ALL CONNECTED USERS
+            // UPDATE USER ONLINE STATUS
+            userService.updateUserStatus(socket.userId, false)
+            // io.emit("offline", socket.userId);
+            // REMOVE OBJECT
+            delete users[socket.userId];
+        }
+        socket.disconnect(); // DISCONNECT SOCKET
 
-        // UPDATE USER STATUS ONLINE
-        userService.updateUserStatus(users[socket.id], false);
-        io.emit("new-conversation");
-        // remove saved socket from users object
-        delete users[socket.id];
-        console.log(users)
-    })
+        // console.info('users: ', users)
+    });
+
 });
 
 const exitHandler = () => {
