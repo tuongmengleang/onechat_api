@@ -11,6 +11,8 @@ router.route('/')
     .get(auth, conversationController.index)
 
 router.route('/:conversation_id')
-    .put(auth, validate(conversationValidation.updateConversation), conversationController.update);
+    .put(auth, validate(conversationValidation.updateConversation), conversationController.update)
+
+router.get('/:participant', auth, conversationController.find)
 
 module.exports = router;

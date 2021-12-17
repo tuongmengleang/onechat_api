@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 const catchAsync = require('../../../utils/catchAsync');
 const Conversation = require('../../../models/Conversation');
 const ApiError = require('../../../utils/ApiError');
+const { conversationService } = require('../../../services')
 
 /**
  *  @desc   Get conversation of User
@@ -13,7 +14,8 @@ exports.index = catchAsync(async (req, res) => {
         const user_id = req.user._id;
         const conversations = await Conversation.find({
             participants: { $in:[user_id.toString()] }
-        }).sort({ updatedAt: -1 }).cache({ expire: 10 });
+        }).sort({ updatedAt: -1 })
+            //.cache({ expire: 10 });
 
         // emit socket new conversation
         global.io.emit("new-conversation");
@@ -42,7 +44,7 @@ exports.create = catchAsync(async (req, res) => {
     try {
         const result = await conversation.save();
         // emit socket new conversation
-        global.io.emit("new-conversation");
+        global.io.emit("new-conversation", result);
         res.status(httpStatus.CREATED).send(result);
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
@@ -69,6 +71,20 @@ exports.update = catchAsync(async (req, res) => {
                 res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
             });
 
+    } catch (error) {
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
+    }
+});
+
+/**
+ *  @desc   Find conversation by userId
+ *  @method POST api/v1/conversation/find
+ *  @access Public
+ */
+exports.find = catchAsync(async (req, res) => {
+    try {
+        const conversation = await conversationService.findConversation(req.user._id, req.params.participant);
+        res.send(conversation)
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
