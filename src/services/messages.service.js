@@ -26,17 +26,7 @@ const latestMessage = async (conversation_id) => {
     return latestMessage;
 };
 
-const getUnread = async (conversation_id) => {
-    // const messages = await Message.aggregate([
-    //     { $match: { conversation_id: conversation_id } }
-    // ]);
-    // const message = await Message.find({read_by: 'user#83'});
-    const message = await Message.find({_id: '61b07b0483ae40cbafd23a3a'}, {read_by: 1})
-    return message
-};
-
 module.exports = {
     updateMessageReadUnread,
     latestMessage,
-    getUnread
 };

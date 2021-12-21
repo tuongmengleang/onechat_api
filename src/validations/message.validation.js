@@ -13,9 +13,17 @@ const getMessage = {
     params: Joi.object().keys({
         conversation_id: Joi.required().custom(objectId)
     })
-}
+};
+
+const pushNotification = {
+    body: Joi.object().keys({
+        registrationToken: Joi.string().required(),
+        text: Joi.string().required()
+    })
+};
 
 module.exports = {
     createMessage,
-    getMessage
-}
+    getMessage,
+    pushNotification
+};

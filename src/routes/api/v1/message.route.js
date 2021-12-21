@@ -21,4 +21,7 @@ router.route('/:conversation_id/unread')
 router.route('/:message_id')
     .put(auth, MessageController.update);
 
+router.route('/notification')
+    .post(auth, MessageController.notification)
+
 module.exports = router;

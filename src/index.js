@@ -5,7 +5,7 @@ const config = require('./config/config');
 const logger = require('./config/logger');
 const server = require('http').createServer(app);
 const io = require('socket.io')(server, { cors: { origin: '*' } }); // Create socket.io connection
-const { userService } = require('./services');
+const { userService, messageService } = require('./services');
 
 mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
     logger.info('Connected to MongoDB');
@@ -30,6 +30,12 @@ io.on('connection', (socket) => {
     // listen on typing message from client
     socket.on('typing-message', (data) => {
         io.emit('display-typing', data);
+    });
+
+    // listen on update message readed
+    socket.on('update-message-read', async(data) => {
+        await messageService.updateMessageReadUnread(data._id, true)
+        // io.emit('update-message-read', data)
     });
 
     // // LISTEN USER DISCONNECTED
