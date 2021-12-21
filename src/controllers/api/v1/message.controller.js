@@ -3,7 +3,44 @@ const catchAsync = require('../../../utils/catchAsync');
 const Message = require('../../../models/Message');
 const getPagination = require('../../../utils/pagination');
 const ApiError = require('../../../utils/ApiError');
-const { messageService, conversationService } = require('../../../services');
+const { messageService, conversationService, userService } = require('../../../services');
+const { admin } = require('../../../config/firebase');
+const { convert } = require('html-to-text');
+
+// test push notification
+exports.notification = catchAsync(async (req, res) => {
+    const notification_options = {
+        priority: "high",
+        timeToLive: 60 * 60 * 24,
+    };
+    const { registrationToken, text, author } = req.body;
+
+    const user = await userService.getUserById(author);
+
+    const message = {
+        notification: {
+            title: user.full_name,
+            body: convert(text)
+                .replace(/\n/ig, '')
+                .replace(/<style[^>]*>[\s\S]*?<\/style[^>]*>/ig, '')
+                .replace(/<head[^>]*>[\s\S]*?<\/head[^>]*>/ig, '')
+                .replace(/<script[^>]*>[\s\S]*?<\/script[^>]*>/ig, '')
+                .replace(/<\/\s*(?:p|div)>/ig, '\n')
+                .replace(/<br[^>]*\/?>/ig, '\n')
+                .replace(/<[^>]*>/ig, '')
+                .replace('&nbsp;', ' ')
+                .replace(/[^\S\r\n][^\S\r\n]+/ig, ' ')
+        }
+    };
+
+    admin.messaging().sendToDevice(registrationToken, message, notification_options)
+        .then(response => {
+            res.send(response)
+        })
+        .catch(error => {
+            console.info(error)
+        })
+});
 
 /**
  *  @desc   Store a new message
