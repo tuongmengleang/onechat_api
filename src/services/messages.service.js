@@ -17,16 +17,26 @@ const updateMessageReadUnread = async (_id, is_read) => {
  * @returns {Promise<Messages>}
  */
 const latestMessage = async (conversation_id) => {
-    const latestMessage = await Message.aggregate([
-        { $match: { conversation_id: conversation_id } },
-        { $sort: { 'createdAt': -1 } },
+    const message = await Message.findOne({ conversation_id: conversation_id }).sort({ 'createdAt': -1 })
+    return message;
+};
+
+/**
+ * Get count message unread of conversation
+ * @param {ObjectId} conversation_id
+ * @returns {Promise<Messages>}
+ */
+const unreadCount = async (conversation_id) => {
+    const result = await Message.aggregate([
+        { $match: { conversation_id } },
+        { $group: { _id: conversation_id, unreadCount: { $sum: { $cond: [{ $eq: ["$is_read", false] }, 1, 0] } } } },
         { $limit: 1 },
     ]);
-
-    return latestMessage;
-};
+    return result[0]
+}
 
 module.exports = {
     updateMessageReadUnread,
     latestMessage,
+    unreadCount
 };
