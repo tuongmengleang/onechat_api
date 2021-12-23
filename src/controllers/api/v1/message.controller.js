@@ -7,41 +7,6 @@ const { messageService, conversationService, userService } = require('../../../s
 const { admin } = require('../../../config/firebase');
 const { convert } = require('html-to-text');
 
-// test push notification
-exports.notification = catchAsync(async (req, res) => {
-    const notification_options = {
-        priority: "high",
-        timeToLive: 60 * 60 * 24,
-    };
-    const { registrationToken, text, author } = req.body;
-
-    const user = await userService.getUserById(author);
-
-    const message = {
-        notification: {
-            title: user ? user.full_name : '',
-            body: convert(text)
-                .replace(/\n/ig, '')
-                .replace(/<style[^>]*>[\s\S]*?<\/style[^>]*>/ig, '')
-                .replace(/<head[^>]*>[\s\S]*?<\/head[^>]*>/ig, '')
-                .replace(/<script[^>]*>[\s\S]*?<\/script[^>]*>/ig, '')
-                .replace(/<\/\s*(?:p|div)>/ig, '\n')
-                .replace(/<br[^>]*\/?>/ig, '\n')
-                .replace(/<[^>]*>/ig, '')
-                .replace('&nbsp;', ' ')
-                .replace(/[^\S\r\n][^\S\r\n]+/ig, ' ')
-        }
-    };
-
-    admin.messaging().sendToDevice(registrationToken, message, notification_options)
-        .then(response => {
-            res.send(response)
-        })
-        .catch(error => {
-            console.info(error)
-        })
-});
-
 /**
  *  @desc   Store a new message
  *  @method POST api/v1/messages
@@ -159,6 +124,45 @@ exports.unread = catchAsync(async (req, res) => {
     }
 })
 
+/**
+ *  @desc   Push notification to client
+ *  @method GET api/v1/conversations/notification
+ *  @access Public
+ */
+exports.notification = catchAsync(async (req, res) => {
+    const notification_options = {
+        priority: "high",
+        timeToLive: 60 * 60 * 24,
+    };
+    const { registrationToken, text, author } = req.body;
+
+    const user = await userService.getUserById(author);
+
+    const message = {
+        notification: {
+            title: user ? user.full_name : '',
+            body: convert(text)
+                .replace(/\n/ig, '')
+                .replace(/<style[^>]*>[\s\S]*?<\/style[^>]*>/ig, '')
+                .replace(/<head[^>]*>[\s\S]*?<\/head[^>]*>/ig, '')
+                .replace(/<script[^>]*>[\s\S]*?<\/script[^>]*>/ig, '')
+                .replace(/<\/\s*(?:p|div)>/ig, '\n')
+                .replace(/<br[^>]*\/?>/ig, '\n')
+                .replace(/<[^>]*>/ig, '')
+                .replace('&nbsp;', ' ')
+                .replace(/[^\S\r\n][^\S\r\n]+/ig, ' '),
+            icon: user ? user.image : ''
+        }
+    };
+
+    admin.messaging().sendToDevice(registrationToken, message, notification_options)
+        .then(response => {
+            res.send(response)
+        })
+        .catch(error => {
+            console.info(error)
+        })
+});
 
 function unescapeHTML(escapedHTML) {
     return escapedHTML.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
