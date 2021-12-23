@@ -10,7 +10,7 @@ router.route('/')
     .post(auth, validate(messageValidation.createMessage), MessageController.create);
 
 router.route('/:conversation_id')
-    .get(auth, validate(messageValidation.getMessage), MessageController.index)
+    .get(auth, MessageController.index)
 
 router.route('/:conversation_id/latest')
     .get(auth, validate(messageValidation.getMessage), MessageController.latest)
