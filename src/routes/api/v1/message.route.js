@@ -10,18 +10,19 @@ router.route('/')
     .post(auth, validate(messageValidation.createMessage), MessageController.create);
 
 router.route('/:conversation_id')
-    .get(auth, MessageController.index)
+    .get(auth, validate(messageValidation.getMessage), MessageController.index)
 
 router.route('/:conversation_id/latest')
-    .get(auth, MessageController.latest)
+    .get(auth, validate(messageValidation.getMessage), MessageController.latest)
 
 router.route('/:conversation_id/unread')
-    .get(auth, MessageController.unread)
+    .get(auth, validate(messageValidation.getMessage), MessageController.unread)
 
 router.route('/:message_id')
     .put(auth, MessageController.update);
 
 router.route('/notification')
     .post(auth, MessageController.notification)
+
 
 module.exports = router;

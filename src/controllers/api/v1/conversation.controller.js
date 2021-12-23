@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../../../utils/catchAsync');
 const Conversation = require('../../../models/Conversation');
+const Message = require('../../../models/Message');
 const ApiError = require('../../../utils/ApiError');
 const { conversationService } = require('../../../services')
 

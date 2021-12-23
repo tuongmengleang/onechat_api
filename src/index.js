@@ -33,10 +33,10 @@ io.on('connection', (socket) => {
     });
 
     // listen on update message readed
-    socket.on('update-message-read', async(data) => {
-        await messageService.updateMessageReadUnread(data._id, true)
-        // io.emit('update-message-read', data)
-    });
+    // socket.on('update-message-read', async(data) => {
+    //     await messageService.updateMessageReadUnread(data._id, true)
+    //     io.emit('update-message-read', data)
+    // });
 
     // // LISTEN USER DISCONNECTED
     socket.on('disconnect', () => {

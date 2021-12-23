@@ -19,7 +19,7 @@ exports.notification = catchAsync(async (req, res) => {
 
     const message = {
         notification: {
-            title: user.full_name,
+            title: user ? user.full_name : '',
             body: convert(text)
                 .replace(/\n/ig, '')
                 .replace(/<style[^>]*>[\s\S]*?<\/style[^>]*>/ig, '')
@@ -85,7 +85,7 @@ exports.index = catchAsync(async (req, res) => {
         await Message.paginate({ conversation_id: conversation_id }, { offset, limit, sort: { createdAt: 'desc' } })
             .then((result) => {
                 // update last messages list read_by
-                if (result.docs.length > 0)
+                if (result && result.docs && result.docs.length > 0)
                     for (let i = 0 ; i < result.docs.length ; i ++)
                         messageService.updateMessageReadUnread(result.docs[i]._id, true)
                 res.send({
@@ -115,7 +115,10 @@ exports.update = catchAsync(async (req, res) => {
             .then(data => {
                 if (!data)
                     throw new ApiError(httpStatus.NOT_FOUND, 'Message not found');
-                else res.status(httpStatus.OK).json({ message: 'Message has been updated', data });
+                else {
+                    global.io.emit("update-message");
+                    res.status(httpStatus.OK).json({ message: 'Message has been updated', data });
+                }
             })
             .catch(error => {
                 res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
@@ -140,20 +143,22 @@ exports.latest = catchAsync(async (req, res) => {
     }
 });
 
+
 /**
- *  @desc   Get unread message of conversation
- *  @method GET api/v1/messages/conversation_id/unread
+ *  @desc   Get count messages of conversation unread
+ *  @method GET api/v1/conversation/unread
  *  @access Public
  */
 exports.unread = catchAsync(async (req, res) => {
     try {
         const conversation_id = req.params.conversation_id;
-        const messages = await messageService.getUnread(conversation_id)
-        res.send(messages)
+        const count = await messageService.unreadCount(conversation_id)
+        res.json(count)
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
-});
+})
+
 
 function unescapeHTML(escapedHTML) {
     return escapedHTML.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
