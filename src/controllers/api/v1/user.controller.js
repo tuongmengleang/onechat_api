@@ -84,7 +84,7 @@ exports.create = catchAsync(async (req, res) => {
  */
 exports.getUser = catchAsync(async (req, res) => {
     try {
-        const user = await userService.getUserById(req.params.user_id);
+        const user = await userService.getUserById(req.params.userId);
         if (!user)
             throw new ApiError(httpStatus.NOT_FOUND, 'User not found!');
 
@@ -131,6 +131,20 @@ exports.getUsers = catchAsync(async (req, res) => {
                 });
         } else res.send([])
         // res.send(result)
+    } catch (error) {
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
+    }
+});
+
+/**
+ *  @desc   Update user by id
+ *  @method PUT api/v1/users/{id}
+ *  @access Public
+ */
+exports.updateUser = catchAsync(async (req, res) => {
+    try {
+        const user = await userService.updateUserById(req.params.userId, req.body);
+        res.send(user);
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }

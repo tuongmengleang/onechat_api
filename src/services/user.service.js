@@ -51,9 +51,26 @@ const updateUserStatus = async (_id, is_active) => {
     global.io.emit('update-user-online', _id);
 };
 
+/**
+ * Update user by id
+ * @param {ObjectId} userId
+ * @param {Object} updateBody
+ * @returns {Promise<User>}
+ */
+const updateUserById = async (userId, updateBody) => {
+    const user = await getUserById(userId);
+    if (!user) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    }
+    Object.assign(user, updateBody);
+    await user.save();
+    return user;
+};
+
 module.exports = {
     createUser,
     queryUsers,
     getUserById,
-    updateUserStatus
+    updateUserStatus,
+    updateUserById
 };

@@ -14,6 +14,8 @@ const UserSchema = new mongoose.Schema({
     image: { type: String },
     is_active: { type: Boolean, default: false },
     last_active: { type: Date },
+    last_login: { type: Date, default: Date.now() },
+    device_id: { type: String }
 }, { toObject: { virtuals: true }, toJSON: { virtuals: true } },{ timestamps: true });
 
 // Virtual for user's full name
