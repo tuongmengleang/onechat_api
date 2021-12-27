@@ -14,5 +14,6 @@ router.route('/:conversation_id')
     .put(auth, validate(conversationValidation.updateConversation), conversationController.update)
 
 router.get('/:participant', auth, conversationController.find)
+router.get('/:userId/count-unread', conversationController.countUnread)
 
 module.exports = router;

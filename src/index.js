@@ -24,7 +24,6 @@ io.on('connection', (socket) => {
         users[userId].push(socket.id)
         socket.userId = userId
         userService.updateUserStatus(userId, true)
-        // console.info('users: ', users)
     });
 
     // listen on typing message from client
@@ -40,18 +39,18 @@ io.on('connection', (socket) => {
 
     // // LISTEN USER DISCONNECTED
     socket.on('disconnect', () => {
-        _.remove(users[socket.userId], (u) => u === socket.id)
-        if (users[socket.userId].length === 0) {
-            // USER IS OFFLINE BROAD CAST TO ALL CONNECTED USERS
-            // UPDATE USER ONLINE STATUS
-            userService.updateUserStatus(socket.userId, false)
-            // io.emit("offline", socket.userId);
-            // REMOVE OBJECT
-            delete users[socket.userId];
-        }
-        socket.disconnect(); // DISCONNECT SOCKET
-
-        // console.info('users: ', users)
+        setTimeout(() => {
+            _.remove(users[socket.userId], (u) => u === socket.id)
+            if (users[socket.userId] && users[socket.userId].length === 0) {
+                // USER IS OFFLINE BROAD CAST TO ALL CONNECTED USERS
+                // UPDATE USER ONLINE STATUS
+                userService.updateUserStatus(socket.userId, false)
+                // io.emit("offline", socket.userId);
+                // REMOVE OBJECT
+                delete users[socket.userId];
+            }
+            socket.disconnect(); // DISCONNECT SOCKET
+        }, 5000)
     });
 
 });

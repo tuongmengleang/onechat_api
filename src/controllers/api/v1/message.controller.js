@@ -50,9 +50,11 @@ exports.index = catchAsync(async (req, res) => {
         await Message.paginate({ conversation_id: conversation_id }, { offset, limit, sort: { createdAt: 'desc' } })
             .then((result) => {
                 // update last messages list read_by
-                if (result && result.docs && result.docs.length > 0)
+                if (result.docs.length > 0) {
                     for (let i = 0 ; i < result.docs.length ; i ++)
                         messageService.updateMessageReadUnread(result.docs[i]._id, true)
+                    global.io.emit("read-message");
+                }
                 res.send({
                     messages: result.docs,
                     // last_message: result.docs.slice(-1)[0],
@@ -130,32 +132,24 @@ exports.unread = catchAsync(async (req, res) => {
  *  @access Public
  */
 exports.notification = catchAsync(async (req, res) => {
-    const notification_options = {
+    const options = {
         priority: "high",
         timeToLive: 60 * 60 * 24,
     };
     const { registrationToken, text, author } = req.body;
 
     const user = await userService.getUserById(author);
-
+    // const registrationToken = user ? user.device_id : ''
+    // res.send({ registrationToken, text, author })
     const message = {
         notification: {
             title: user ? user.full_name : '',
-            body: convert(text)
-                .replace(/\n/ig, '')
-                .replace(/<style[^>]*>[\s\S]*?<\/style[^>]*>/ig, '')
-                .replace(/<head[^>]*>[\s\S]*?<\/head[^>]*>/ig, '')
-                .replace(/<script[^>]*>[\s\S]*?<\/script[^>]*>/ig, '')
-                .replace(/<\/\s*(?:p|div)>/ig, '\n')
-                .replace(/<br[^>]*\/?>/ig, '\n')
-                .replace(/<[^>]*>/ig, '')
-                .replace('&nbsp;', ' ')
-                .replace(/[^\S\r\n][^\S\r\n]+/ig, ' '),
+            body: convert(text),
             icon: user ? user.image : ''
         }
     };
 
-    admin.messaging().sendToDevice(registrationToken, message, notification_options)
+    admin.messaging().sendToDevice(registrationToken, message, options)
         .then(response => {
             res.send(response)
         })
@@ -167,3 +161,13 @@ exports.notification = catchAsync(async (req, res) => {
 function unescapeHTML(escapedHTML) {
     return escapedHTML.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
 }
+
+// .replace(/\n/ig, '')
+//     .replace(/<style[^>]*>[\s\S]*?<\/style[^>]*>/ig, '')
+//     .replace(/<head[^>]*>[\s\S]*?<\/head[^>]*>/ig, '')
+//     .replace(/<script[^>]*>[\s\S]*?<\/script[^>]*>/ig, '')
+//     .replace(/<\/\s*(?:p|div)>/ig, '\n')
+//     .replace(/<br[^>]*\/?>/ig, '\n')
+//     .replace(/<[^>]*>/ig, '')
+//     .replace('&nbsp;', ' ')
+//     .replace(/[^\S\r\n][^\S\r\n]+/ig, ' '),

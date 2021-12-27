@@ -1,7 +1,6 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../../../utils/catchAsync');
 const Conversation = require('../../../models/Conversation');
-const Message = require('../../../models/Message');
 const ApiError = require('../../../utils/ApiError');
 const { conversationService } = require('../../../services')
 
@@ -89,3 +88,18 @@ exports.find = catchAsync(async (req, res) => {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
 });
+
+/**
+ *  @desc   Count message unread of conversation
+ *  @method POST api/v1/conversation/{userId}/count-unread
+ *  @access Public
+ */
+exports.countUnread = catchAsync(async (req, res) => {
+    try {
+        const userId = req.params.userId
+        const result = await conversationService.countConversation(userId)
+        res.json(result)
+    } catch (error) {
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
+    }
+})

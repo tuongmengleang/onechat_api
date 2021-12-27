@@ -28,7 +28,7 @@ module.exports = {
     mongoose: {
         url: envVars.MONGODB_URL + (envVars.NODE_ENV === 'test' ? '-test' : ''),
         options: {
-            useNewUrlParser: true,
+            useNewUrlParser: false,
             useUnifiedTopology: true,
         },
     },

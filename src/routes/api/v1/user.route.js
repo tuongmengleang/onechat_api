@@ -10,7 +10,9 @@ router.route('/')
     .get(auth, UserController.getUsers)
     .post(auth, UserController.create)
 // router.get('/', auth, UserController.getUsers);
-router.get('/me', auth, UserController.me);
-router.get('/:user_id', auth, validate(UserValidation.getUser), UserController.getUser);
+router.get('/me', auth, UserController.me)
+router.route('/:userId')
+    .get(auth, validate(UserValidation.getUser), UserController.getUser)
+    .patch(auth, validate(UserValidation.updateUser), UserController.updateUser)
 
 module.exports = router;
