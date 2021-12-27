@@ -50,9 +50,11 @@ exports.index = catchAsync(async (req, res) => {
         await Message.paginate({ conversation_id: conversation_id }, { offset, limit, sort: { createdAt: 'desc' } })
             .then((result) => {
                 // update last messages list read_by
-                if (result && result.docs && result.docs.length > 0)
+                if (result.docs.length > 0) {
                     for (let i = 0 ; i < result.docs.length ; i ++)
                         messageService.updateMessageReadUnread(result.docs[i]._id, true)
+                    global.io.emit("read-message");
+                }
                 res.send({
                     messages: result.docs,
                     // last_message: result.docs.slice(-1)[0],

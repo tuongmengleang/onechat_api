@@ -7,10 +7,23 @@ const userService = require('./user.service');
  * @returns {Promise<User>}
  */
 const loginWithToken = async (data) => {
-    const user = await User.findOne({ user_id: data.id });
-    if (!user) {
+    const user = await User.findOne({ user_id: data.user_name });
+    // Update User
+    if (user) {
+        let update = {
+            first_name: data.first_name,
+            last_name: data.last_name,
+            email: data.email,
+            phone: data.phone_number,
+            image: 'https://dev-api.uvacancy.com/api/v1/media?path=' + data.picture_folder + '/small/' + data.picture_file_name
+        };
+        const _user = await userService.updateUser(data.user_name, update)
+        return _user
+    }
+    // Create User
+    else {
         const newUser = await userService.createUser({
-            user_id: data.id,
+            user_id: data.user_name,
             first_name: data.first_name,
             last_name: data.last_name,
             email: data.email,
@@ -19,9 +32,9 @@ const loginWithToken = async (data) => {
         });
         return newUser;
     }
-    else return user;
 };
 
 module.exports = {
     loginWithToken
 };
+

@@ -1,7 +1,6 @@
 const httpStatus = require('http-status');
 const User = require('../models/User');
 const ApiError = require('../utils/ApiError');
-const logger = require('../config/logger');
 
 /**
  * Create a user
@@ -46,9 +45,11 @@ const getUserById = async (id) => {
  * @param {Boolean} is_active
  * @returns {Promise<User>}
  */
-const updateUserStatus = async (_id, is_active) => {
-    await User.findByIdAndUpdate(_id, { is_active: is_active, last_active: Date.now() });
-    global.io.emit('update-user-online', _id);
+const updateUserStatus = async (user_id, is_active) => {
+    const user = await User.findOneAndUpdate({ user_id: user_id }, { is_active: is_active, last_active: Date.now() });
+    if (user) {
+        global.io.emit('update-user-online', user._id);
+    }
 };
 
 /**
@@ -67,10 +68,22 @@ const updateUserById = async (userId, updateBody) => {
     return user;
 };
 
+/**
+ * Update user info
+ * @param {ObjectId} user_id
+ * @returns {Promise<User>}
+ */
+const updateUser = async (userId, update) => {
+    const _user = await User.findOneAndUpdate({ user_id: userId }, update);
+    return _user
+};
+
+
 module.exports = {
     createUser,
     queryUsers,
     getUserById,
     updateUserStatus,
-    updateUserById
+    updateUserById,
+    updateUser,
 };
