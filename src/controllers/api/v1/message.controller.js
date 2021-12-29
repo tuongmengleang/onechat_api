@@ -3,9 +3,11 @@ const catchAsync = require('../../../utils/catchAsync');
 const Message = require('../../../models/Message');
 const getPagination = require('../../../utils/pagination');
 const ApiError = require('../../../utils/ApiError');
-const { messageService, conversationService, userService } = require('../../../services');
+const { messageService, conversationService, userService, fileService } = require('../../../services');
 const { admin } = require('../../../config/firebase');
 const { convert } = require('html-to-text');
+const multer = require('multer');
+const s3Client = require('../../../config/minio');
 
 /**
  *  @desc   Store a new message
@@ -83,7 +85,7 @@ exports.update = catchAsync(async (req, res) => {
                 if (!data)
                     throw new ApiError(httpStatus.NOT_FOUND, 'Message not found');
                 else {
-                    global.io.emit("update-message");
+                    global.io.emit("update-message", message_id);
                     res.status(httpStatus.OK).json({ message: 'Message has been updated', data });
                 }
             })
@@ -156,6 +158,12 @@ exports.notification = catchAsync(async (req, res) => {
         .catch(error => {
             console.info(error)
         })
+});
+
+
+exports.uploadFile = catchAsync(async (req, res) => {
+    await fileService.uploadFiles(req, res)
+    // await fileService.compressFile(req, res)
 });
 
 function unescapeHTML(escapedHTML) {

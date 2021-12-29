@@ -24,5 +24,7 @@ router.route('/:message_id')
 router.route('/notification')
     .post(auth, MessageController.notification)
 
+router.route('/upload-file')
+    .post(auth, MessageController.uploadFile)
 
 module.exports = router;
