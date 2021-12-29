@@ -14,7 +14,8 @@ exports.index = catchAsync(async (req, res) => {
         const user_id = req.user._id;
         const conversations = await Conversation.find({
             participants: { $in:[user_id.toString()] }
-        }).sort({ updatedAt: -1 }).cache({ expire: 10 });
+        }).sort({ updatedAt: -1 })
+        //.cache({ expire: 10 });
 
         // emit socket new conversation
         global.io.emit("new-conversation");
