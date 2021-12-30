@@ -3,15 +3,20 @@ const multer = require('multer');
 const sharp = require('sharp');
 const s3Client = require('../config/minio');
 const config = require('../config/config');
-const path = require('path')
-const fs = require('fs')
 
-const whitelist = [
+const imageExtensions = [
     'image/png',
     'image/jpeg',
     'image/jpg',
     'image/webp'
 ];
+const docsExtensions = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+];
+const videoExtensions = [];
+
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 20 * 1024 * 1024 }, // 1 * 1024 * 1024 = 1MB
@@ -21,13 +26,13 @@ const upload = multer({
     //     else
     //         cb(null, true)
     // }
-    fileFilter: (req, file, cb) => {
-        // accept image only
-        if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-            return cb(new Error('Only image files are allowed!😢😢'), false);
-        }
-        cb(null, true);
-    }
+    // fileFilter: (req, file, cb) => {
+    //     // accept image only
+    //     if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+    //         return cb(new Error('Only image files are allowed!😢😢'), false);
+    //     }
+    //     cb(null, true);
+    // }
 }).array('files[]', 10);
 /**
  * Upload File to Minio S3
@@ -45,24 +50,21 @@ const uploadFiles = async (req, res) => {
             const currentMonth = currentTime.getMonth() + 1;
             if (files && files.length > 0) {
                 const filesUploaded = files.map((file) => {
-                    const { filename: image } = file
-                    // console.info('file :', file)
-                    const objectName = req.user.user_id + '/' + currentYear + '/' + currentMonth + '/' + `${Date.now()}-${file.originalname}`;
-                    sharp(objectName)
-                        // .jpeg({ quality: 50 })
-                        // .toFile(
-                        //     req.user.user_id + '/' + currentYear + '/' + currentMonth + '/' + 'resized/' + `${Date.now()}-${file.originalname}`
-                        // )
-                        .resize(330,null)
-                        .flatten()
-                        .toFile('newFile.jpg', function(err){
-                            if(err){
-                                res.sendStatus(500);
-                                return;
-                            }
-                            res.sendFile('newFile.jpg');
-                        });
-                    s3Client.putObject(config.minio.bucketName, objectName, file.buffer)
+                    if (imageExtensions.includes(file.mimetype)) {
+                        const objectName = req.user.user_id + '/' + currentYear + '/' + currentMonth + '/' + 'images/' + `${Date.now()}-${file.originalname}`;
+                        // s3Client.putObject(config.minio.bucketName, objectName, file.buffer)
+                        sharp(file.buffer)
+                            .jpeg({ quality: 50 })
+                            .toBuffer((err, data) => {
+                            if (err) throw err;
+
+                            s3Client.putObject(config.minio.bucketName, objectName, data)
+                        })
+                    }
+                    else if (docsExtensions.includes(file.mimetype)) {
+                        const objectName = req.user.user_id + '/' + currentYear + '/' + currentMonth + '/' + 'docs/' + `${Date.now()}-${file.originalname}`;
+                        s3Client.putObject(config.minio.bucketName, objectName, file.buffer)
+                    }
                 });
                 Promise.all(filesUploaded)
                     .then(() => {
@@ -90,7 +92,7 @@ const storage = multer.diskStorage({
 const singUpload = multer({
     storage: storage,
     limits: { fileSize: 1 * 1000 * 5000 },
-}).single('image');
+}).single('file');
 const compressFile = async(req, res) => {
     singUpload(req, res, async(err) => {
         if(err) {
@@ -98,12 +100,14 @@ const compressFile = async(req, res) => {
         } else {
             const { filename: image } = req.file
             console.log("path :", req.file.path)
-            await sharp(req.file.path)
-                .jpeg({ quality: 50 })
-                .toFile(
-                    path.resolve(req.file.destination,'resized',image)
-                )
-            fs.unlinkSync(req.file.path)
+            console.log("destination :", req.file.destination)
+            console.log("image :",image)
+            // await sharp(req.file.path)
+            //     .jpeg({ quality: 50 })
+            //     .toFile(
+            //         path.resolve(req.file.destination,'resized',image)
+            //     )
+            // fs.unlinkSync(req.file.path)
 
             return res.send('SUCCESS!')
         }

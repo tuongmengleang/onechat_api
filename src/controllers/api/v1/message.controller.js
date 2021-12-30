@@ -6,8 +6,6 @@ const ApiError = require('../../../utils/ApiError');
 const { messageService, conversationService, userService, fileService } = require('../../../services');
 const { admin } = require('../../../config/firebase');
 const { convert } = require('html-to-text');
-const multer = require('multer');
-const s3Client = require('../../../config/minio');
 
 /**
  *  @desc   Store a new message
@@ -17,7 +15,7 @@ const s3Client = require('../../../config/minio');
 exports.create = catchAsync(async (req, res) => {
     try {
         const { conversation_id, author, text } = req.body;
-
+        // await fileService.uploadFiles(req, res)
         const newMessage = new Message({
             conversation_id: conversation_id,
             author: author,

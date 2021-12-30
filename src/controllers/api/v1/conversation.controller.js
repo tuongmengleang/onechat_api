@@ -19,7 +19,7 @@ exports.index = catchAsync(async (req, res) => {
 
         // emit socket new conversation
         global.io.emit("new-conversation");
-        res.status(200).json(conversations);
+        res.send(conversations);
 
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
