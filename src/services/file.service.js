@@ -1,120 +1,68 @@
-const httpStatus = require('http-status');
-const multer = require('multer');
 const sharp = require('sharp');
+const path = require('path');
 const s3Client = require('../config/minio');
 const config = require('../config/config');
 
-const imageExtensions = [
-    'image/png',
-    'image/jpeg',
-    'image/jpg',
-    'image/webp'
-];
-const docsExtensions = [
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-];
-const videoExtensions = [];
-
-const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 20 * 1024 * 1024 }, // 1 * 1024 * 1024 = 1MB
-    // fileFilter: (req, file, cb) => {
-    //     if (!whitelist.includes(file.mimetype))
-    //         return cb(new Error('Only .png, .jpg and .jpeg format allowed!!😢😢'), false)
-    //     else
-    //         cb(null, true)
-    // }
-    // fileFilter: (req, file, cb) => {
-    //     // accept image only
-    //     if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-    //         return cb(new Error('Only image files are allowed!😢😢'), false);
-    //     }
-    //     cb(null, true);
-    // }
-}).array('files[]', 10);
 /**
  * Upload File to Minio S3
  * @param {object} file
  * @returns {Promise<File>}
  */
-const uploadFiles = async (req, res) => {
-    upload(req, res, (err) => {
-        if(err) {
-            return res.status(httpStatus.BAD_REQUEST).send({ error: err });
-        } else {
-            const files = req.files;
-            const currentTime = new Date();
-            const currentYear = currentTime.getFullYear();
-            const currentMonth = currentTime.getMonth() + 1;
-            if (files && files.length > 0) {
-                const filesUploaded = files.map((file) => {
-                    if (imageExtensions.includes(file.mimetype)) {
-                        const objectName = req.user.user_id + '/' + currentYear + '/' + currentMonth + '/' + 'images/' + `${Date.now()}-${file.originalname}`;
-                        // s3Client.putObject(config.minio.bucketName, objectName, file.buffer)
-                        sharp(file.buffer)
-                            .jpeg({ quality: 50 })
-                            .toBuffer((err, data) => {
-                            if (err) throw err;
-
-                            s3Client.putObject(config.minio.bucketName, objectName, data)
-                        })
-                    }
-                    else if (docsExtensions.includes(file.mimetype)) {
-                        const objectName = req.user.user_id + '/' + currentYear + '/' + currentMonth + '/' + 'docs/' + `${Date.now()}-${file.originalname}`;
-                        s3Client.putObject(config.minio.bucketName, objectName, file.buffer)
-                    }
+const imageExtensions = [
+    '.png',
+    '.jpeg',
+    '.jpg',
+];
+const videoExtensions = [
+    '.mp4',
+    '.mov',
+    '.wmv',
+    '.mkv',
+    '.avi'
+];
+const uploadFile = async (userId, file) => {
+    const currentTime = new Date();
+    const currentYear = currentTime.getFullYear();
+    const currentMonth = currentTime.getMonth() + 1;
+    return new Promise(async(resolve, reject) => {
+        const extname = path.extname(file.originalname).toLowerCase()
+        const extension = file.originalname.slice((Math.max(0, file.originalname.lastIndexOf(".")) || Infinity) + 1);
+        if (imageExtensions.includes(extname)) {
+            const objectName = userId + '/' + currentYear + '/' + currentMonth + '/' + 'images/' + `${Date.now()}-${file.originalname}`;
+            await sharp(file.buffer)
+                // .resize(1000)
+                // .jpeg({ progressive: true, force: false })
+                // .png({ compressionLevel: 9, adaptiveFiltering: true, force: true })
+                .webp({ quality: 20 })
+                // .png({quality: 95, compression: 6,})
+                .toBuffer()
+                .then(async (data) => {
+                    await s3Client.putObject(config.minio.bucketName, objectName, data)
+                    resolve({ src: objectName, name: file.originalname, extension, size: file.size, category: 'image' })
+                })
+                .catch( error => {
+                    reject(error)
                 });
-                Promise.all(filesUploaded)
-                    .then(() => {
-                        res.send({ message: "Upload files successfully!" })
-                    })
-                    .catch(() => {
-                        res.status(httpStatus.BAD_REQUEST).send({ error: 'Error uploading file' })
-                    })
-            }
-            else {
-                res.status(httpStatus.BAD_REQUEST).send({ error: 'Please select a file to upload!👌' })
-            }
         }
-    })
-};
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads')
-    },
-    filename: (req, file, cb) => {
-        cb(null, new Date().toISOString() + file.originalname)
-    }
-});
-const singUpload = multer({
-    storage: storage,
-    limits: { fileSize: 1 * 1000 * 5000 },
-}).single('file');
-const compressFile = async(req, res) => {
-    singUpload(req, res, async(err) => {
-        if(err) {
-            return res.status(httpStatus.BAD_REQUEST).send({ error: err });
-        } else {
-            const { filename: image } = req.file
-            console.log("path :", req.file.path)
-            console.log("destination :", req.file.destination)
-            console.log("image :",image)
-            // await sharp(req.file.path)
-            //     .jpeg({ quality: 50 })
-            //     .toFile(
-            //         path.resolve(req.file.destination,'resized',image)
-            //     )
-            // fs.unlinkSync(req.file.path)
-
-            return res.send('SUCCESS!')
+        else if (videoExtensions.includes(extname)) {
+            const objectName = userId + '/' + currentYear + '/' + currentMonth + '/' + 'videos/' + `${Date.now()}-${file.originalname}`;
+            await s3Client.putObject(config.minio.bucketName, objectName, file.buffer, (err, etag) => {
+                if (err)
+                    reject(err)
+                resolve({ src: objectName, name: file.originalname, extension, size: file.size, category: 'video' })
+            })
+        }
+        else {
+            const objectName = userId + '/' + currentYear + '/' + currentMonth + '/' + 'files/' + `${Date.now()}-${file.originalname}`;
+            await s3Client.putObject(config.minio.bucketName, objectName, file.buffer, (err, etag) => {
+                if (err)
+                    reject(err)
+                resolve({ src: objectName, name: file.originalname, extension, size: file.size, category: 'docs' })
+            })
         }
     })
 };
 
 module.exports = {
-    uploadFiles,
-    compressFile
-}
+    uploadFile,
+};
