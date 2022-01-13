@@ -31,13 +31,14 @@ io.on('connection', (socket) => {
         io.emit('display-typing', data);
     });
 
-    // listen on update message readed
-    // socket.on('update-message-read', async(data) => {
-    //     await messageService.updateMessageReadUnread(data._id, true)
-    //     io.emit('update-message-read', data)
-    // });
+    // Socket Connection Error
+    socket.on("connect_error", () => {
+        setTimeout(() => {
+            socket.connect();
+        }, 1000);
+    });
 
-    // // LISTEN USER DISCONNECTED
+    // LISTEN USER DISCONNECTED
     socket.on('disconnect', () => {
         setTimeout(() => {
             _.remove(users[socket.userId], (u) => u === socket.id)

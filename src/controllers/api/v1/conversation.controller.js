@@ -14,11 +14,12 @@ exports.index = catchAsync(async (req, res) => {
         const user_id = req.user._id;
         const conversations = await Conversation.find({
             participants: { $in:[user_id.toString()] }
-        }).sort({ updatedAt: -1 }).cache({ expire: 10 });
+        }).sort({ updatedAt: -1 })
+        //.cache({ expire: 10 });
 
         // emit socket new conversation
         global.io.emit("new-conversation");
-        res.status(200).json(conversations);
+        res.send(conversations);
 
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });

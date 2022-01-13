@@ -14,6 +14,11 @@ const envVarsSchema = Joi.object()
         JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(30).description('minutes after which access tokens expire'),
         JWT_REFRESH_EXPIRATION_DAYS: Joi.number().default(30).description('days after which refresh tokens expire'),
         CRYPTO_SECRET_KEY: Joi.string().required().description('Secret key encrypt token'),
+        MINIO_ENDPOINT: Joi.string().required().description('Minio endpoint'),
+        MINIO_PORT: Joi.string().required().description('Minio port'),
+        MINIO_ACCESS_KEY: Joi.string().required().description('Minio access key'),
+        MINIO_SECRET_KEY: Joi.string().required().description('Minio secret key'),
+        MINIO_BUCKET_NAME: Joi.string().required().description('Minio bucket name')
     }).unknown();
 
 const { value: envVars, error } = envVarsSchema.prefs({ errors: { label: 'key' } }).validate(process.env);
@@ -38,5 +43,12 @@ module.exports = {
         accessExpirationMinutes: envVars.JWT_ACCESS_EXPIRATION_MINUTES,
         refreshExpirationDays: envVars.JWT_REFRESH_EXPIRATION_DAYS,
     },
-    crypto_secret_key: envVars.CRYPTO_SECRET_KEY
+    crypto_secret_key: envVars.CRYPTO_SECRET_KEY,
+    minio: {
+        endPoint: envVars.MINIO_ENDPOINT,
+        port: envVars.MINIO_PORT,
+        accessKey: envVars.MINIO_ACCESS_KEY,
+        secretKey: envVars.MINIO_SECRET_KEY,
+        bucketName: envVars.MINIO_BUCKET_NAME
+    }
 };
