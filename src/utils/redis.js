@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+/*const mongoose = require('mongoose');
 const redis = require('redis');
 const util = require('util');
 const config = require('../config/config');
@@ -60,3 +60,4 @@ module.exports = {
         client.del(JSON.stringify(hashKey));
     }
 };
+*/

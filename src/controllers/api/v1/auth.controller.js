@@ -11,8 +11,9 @@ const { decrypt } = require('../../../utils/crypto');
  */
 exports.login = catchAsync(async (req, res) => {
     const { access_token, token } = req.body;
-
-    await axios.post('https://dev-api.uvacancy.com/api/v1/profile/info', {}, {
+console.log(access_token);
+console.log(token);
+    await axios.post('https://api.uvacancy.com/api/v1/profile/info', {}, {
         headers: {
             'Authorization': `Bearer ${decrypt(access_token).replace(/['"]+/g, '')}`,
             'token': decrypt(token).replace(/['"]+/g, '')
