@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 
 // const Token = require('./Token');
 
-const UserSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
     user_id: { type: String, unique: true },
     first_name: { type: String, required: true, max: 255 },
     last_name: { type: String, required: true, max: 255 },
@@ -19,7 +19,7 @@ const UserSchema = new mongoose.Schema({
 }, { toObject: { virtuals: true }, toJSON: { virtuals: true } },{ timestamps: true });
 
 // Virtual for user's full name
-UserSchema.virtual('full_name').get(function () {
+userSchema.virtual('full_name').get(function () {
     return [this.first_name, this.last_name].filter(Boolean).join(' ');
 });
 
@@ -29,12 +29,12 @@ UserSchema.virtual('full_name').get(function () {
  * @param {ObjectId} [excludeUserId] - The id of the user to be excluded
  * @returns {Promise<boolean>}
  */
-UserSchema.statics.isUserTaken = async function (user_id, excludeUserId) {
+userSchema.statics.isUserTaken = async function (user_id, excludeUserId) {
     const user = await this.findOne({ user_id, _id: { $ne: excludeUserId } });
     return !!user;
 };
 
-UserSchema.methods.generateAuthToken = function() {
+userSchema.methods.generateAuthToken = function() {
     const today = new Date();
     const expirationDate = new Date(today);
     expirationDate.setDate(today.getDate() + 60);
@@ -52,4 +52,4 @@ UserSchema.methods.generateAuthToken = function() {
     });
 };
 
-module.exports = mongoose.model("Users", UserSchema);
+module.exports = mongoose.model("User", userSchema);

@@ -1,6 +1,5 @@
 const httpStatus = require('http-status');
 const multer = require('multer');
-const sharp = require('sharp');
 const catchAsync = require('../../../utils/catchAsync');
 const Message = require('../../../models/Message');
 const getPagination = require('../../../utils/pagination');
@@ -17,7 +16,7 @@ const { convert } = require('html-to-text');
 
 const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 1000 * 1024 * 1024 }, // 1 * 1024 * 1024 = 1MB
+    limits: { fileSize: 100 * 1024 * 1024 }, // 1 * 1024 * 1024 = 1MB
 }).array('files', 10);
 exports.create = catchAsync(async (req, res) => {
     try {
@@ -45,7 +44,7 @@ exports.create = catchAsync(async (req, res) => {
                         const _message = await newMessage.save();
                         await conversationService.updateConversation(conversation_id);
                         // emit socket new message
-                        global.io.emit("new-message", _message);
+                        global.io.emit("new message", _message);
                         res.status(httpStatus.CREATED).json({ message: 'Successfully create message', data: _message });
                     } else if (is_group === 'false') {
                         let _message = null
@@ -64,8 +63,7 @@ exports.create = catchAsync(async (req, res) => {
                                         _message = await newMessage.save();
                                         await conversationService.updateConversation(conversation_id);
                                         // emit socket new message
-                                        global.io.emit("new-message", _message);
-
+                                        global.io.emit("new message", _message);
                                     })
                             })
                         );
@@ -83,7 +81,7 @@ exports.create = catchAsync(async (req, res) => {
                     //update conversation updatedAt
                     await conversationService.updateConversation(conversation_id);
                     // emit socket new message
-                    global.io.emit("new-message", _message);
+                    global.io.emit("new message", _message);
                     res.status(httpStatus.CREATED).json({ message: 'Successfully create message', data: _message });
                 }
 
@@ -93,15 +91,6 @@ exports.create = catchAsync(async (req, res) => {
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
-});
-
-/**
- *  @desc   Upload message file
- *  @method POST api/v1/messages
- *  @access Public
- */
-exports.uploadFile = catchAsync(async (req, res) => {
-    await fileService.uploadFiles(req, res)
 });
 
 /**
@@ -228,7 +217,8 @@ exports.notification = catchAsync(async (req, res) => {
         notification: {
             title: user ? user.full_name : '',
             body: convert(text),
-            icon: user ? user.image : ''
+            icon: user ? user.image : '',
+            sound: 'default'
         }
     };
 

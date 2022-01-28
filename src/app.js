@@ -14,7 +14,7 @@ const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 
 // redis
-require('./utils/redis');
+// require('./utils/redis');
 
 const app = express();
 
@@ -28,7 +28,6 @@ app.use(helmet());
 
 // parse json request body
 app.use(express.json());
-
 // parse urlencoded | form data request body
 app.use(express.urlencoded({ extended: true }));
 
@@ -40,6 +39,10 @@ app.use(mongoSanitize());
 app.use(compression());
 
 // enable cors
+// app.use(cors({
+//     origin: config.cors.origin,
+//     optionsSuccessStatus: 200 // For legacy browser support
+// }));
 app.use(cors());
 app.options('*', cors());
 
@@ -55,6 +58,9 @@ if (config.env === 'production') {
 }
 
 // v1 api routes
+app.get('/', function(req, res) {
+    res.send('Welcome to ONECHAT Server REST API 🔥🔥🔥')
+});
 app.use('/api/v1', routes);
 
 // send back a 404 error for any unknown api request

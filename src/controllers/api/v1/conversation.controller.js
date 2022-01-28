@@ -12,14 +12,15 @@ const { conversationService } = require('../../../services')
 exports.index = catchAsync(async (req, res) => {
     try {
         const user_id = req.user._id;
-        const conversations = await Conversation.find({
-            participants: { $in:[user_id.toString()] }
-        }).sort({ updatedAt: -1 })
-        //.cache({ expire: 10 });
-
-        // emit socket new conversation
-        global.io.emit("new-conversation");
-        res.send(conversations);
+        const conversations = await Conversation
+            .find({participants: { $in:[user_id] }})
+            .populate({
+                path: "participants",
+                model: "User",
+            })
+            .sort({ updatedAt: -1 })
+        // global.io.emit("new conversation");
+        res.json(conversations);
 
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
@@ -32,20 +33,24 @@ exports.index = catchAsync(async (req, res) => {
  *  @access Public
  */
 exports.create = catchAsync(async (req, res) => {
-
-    const { name, creator, participants } = req.body;
-
-    const conversation = new Conversation({
-        name: name,
-        creator: creator,
-        participants: participants
-    });
-
     try {
-        const result = await conversation.save();
-        // emit socket new conversation
-        global.io.emit("new-conversation", result);
-        res.status(httpStatus.CREATED).send(result);
+        const { name, creator, participants } = req.body;
+        const _conversation = new Conversation({
+            name: name,
+            creator: creator,
+            participants: participants,
+        });
+        await _conversation.save();
+        // const newConversation = await Conversation
+        //     .findOne({ _id: _conversation._id })
+        //     .populate({
+        //         path: "participants",
+        //         model: "User",
+        //         options: { limit: 1, sort: { _id: -1 } }
+        //     });
+        // ****** Socket Emit to Client
+        global.io.emit("new conversation", _conversation);
+        res.json(_conversation)
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }

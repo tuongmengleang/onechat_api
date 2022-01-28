@@ -1,12 +1,13 @@
 const mongoose = require('mongoose');
+const ObjectId = mongoose.Schema.ObjectId;
 
-const ConversationSchema = new mongoose.Schema({
+const conversationSchema = new mongoose.Schema({
     name: { type: String, max: 255 },
     image: { type: String, max: 255 },
-    participants: { type: Array },
-    creator: { type: String },
+    participants: [{ type: ObjectId, ref: "User" }] ,
+    is_group: { type: Boolean, default: false },
+    creator: { type: ObjectId, ref: "User" },
     delete_by: { type: Array },
-
 }, { timestamps: true });
 
-module.exports = mongoose.model("Conversations", ConversationSchema);
+module.exports = mongoose.model("Conversation", conversationSchema);

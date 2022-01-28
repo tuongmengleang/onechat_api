@@ -19,7 +19,7 @@ const updateConversation = async (conversation_id) => {
  * @returns {Promise<Conversation>}
  */
 const findConversation = async (creator, userId) => {
-    const result = await Conversation.findOne({ participants : { '$all': [userId, creator.toString()] } });
+    const result = await Conversation.findOne({ participants : { '$all': [creator.toString(), userId] } });
     return result
 }
 
