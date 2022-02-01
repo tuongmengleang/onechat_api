@@ -53,14 +53,11 @@ module.exports = {
         accessKey: envVars.MINIO_ACCESS_KEY,
         secretKey: envVars.MINIO_SECRET_KEY,
         bucketName: envVars.MINIO_BUCKET_NAME
-<<<<<<< HEAD
-=======
     },
     socketio: {
         origins: [ envVars.SOCKET_ORIGIN_1, envVars.SOCKET_ORIGIN_2 ]
     },
     cors: {
         origin: envVars.CORS_ORIGIN
->>>>>>> 7b8f394bbe39f45e508252177404344c9ed2524a
     }
 };
