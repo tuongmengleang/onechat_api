@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
+const ObjectId = mongoose.Schema.ObjectId;
 
-const MessageSchema = new mongoose.Schema({
-    conversation_id: { type: String },
+const messageSchema = new mongoose.Schema({
+    conversation_id: { type: ObjectId, ref: "Conversation" },
     author: { type: String },
     text: { type: String, max: 1000000 },
     files: [{
@@ -18,7 +19,7 @@ const MessageSchema = new mongoose.Schema({
     is_read: { type: Boolean, default: false }
 }, { timestamps: true });
 
-MessageSchema.plugin(mongoosePaginate);
+messageSchema.plugin(mongoosePaginate);
 
-module.exports = mongoose.model("Messages", MessageSchema);
+module.exports = mongoose.model("Message", messageSchema);
 

@@ -7,7 +7,6 @@ const messageValidation = require('../../../validations/message.validation');
 const router = express.Router();
 
 router.post('/', auth, MessageController.create);
-router.post('/upload-file', auth, MessageController.uploadFile);
 
 router.route('/:conversation_id')
     .get(auth, MessageController.index)

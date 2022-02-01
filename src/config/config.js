@@ -18,7 +18,10 @@ const envVarsSchema = Joi.object()
         MINIO_PORT: Joi.string().required().description('Minio port'),
         MINIO_ACCESS_KEY: Joi.string().required().description('Minio access key'),
         MINIO_SECRET_KEY: Joi.string().required().description('Minio secret key'),
-        MINIO_BUCKET_NAME: Joi.string().required().description('Minio bucket name')
+        MINIO_BUCKET_NAME: Joi.string().required().description('Minio bucket name'),
+        SOCKET_ORIGIN_1: Joi.string().required().description('Socketio access origin url'),
+        SOCKET_ORIGIN_2: Joi.string().required().description('Socketio access origin url'),
+        CORS_ORIGIN: Joi.string().required().description('Cors origin access url')
     }).unknown();
 
 const { value: envVars, error } = envVarsSchema.prefs({ errors: { label: 'key' } }).validate(process.env);
@@ -50,5 +53,14 @@ module.exports = {
         accessKey: envVars.MINIO_ACCESS_KEY,
         secretKey: envVars.MINIO_SECRET_KEY,
         bucketName: envVars.MINIO_BUCKET_NAME
+<<<<<<< HEAD
+=======
+    },
+    socketio: {
+        origins: [ envVars.SOCKET_ORIGIN_1, envVars.SOCKET_ORIGIN_2 ]
+    },
+    cors: {
+        origin: envVars.CORS_ORIGIN
+>>>>>>> 7b8f394bbe39f45e508252177404344c9ed2524a
     }
 };
