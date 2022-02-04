@@ -45,11 +45,9 @@ const getUserById = async (id) => {
  * @param {Boolean} is_active
  * @returns {Promise<User>}
  */
-const updateUserStatus = async (user_id, is_active) => {
-    const user = await User.findOneAndUpdate({ user_id: user_id }, { is_active: is_active, last_active: Date.now() });
-    if (user) {
-        global.io.emit('update-user-online', user._id);
-    }
+const updateUserActive = async (userId, is_active) => {
+    const user = await User.findOneAndUpdate({ user_id: userId }, { is_active: is_active, last_active: Date.now() });
+    if (user) global.io.emit('user online', user._id);
 };
 
 /**
@@ -83,7 +81,7 @@ module.exports = {
     createUser,
     queryUsers,
     getUserById,
-    updateUserStatus,
+    updateUserActive,
     updateUserById,
     updateUser,
 };

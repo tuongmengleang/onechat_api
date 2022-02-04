@@ -6,11 +6,12 @@ const messageValidation = require('../../../validations/message.validation');
 
 const router = express.Router();
 
-router.route('/')
-    .post(auth, validate(messageValidation.createMessage), MessageController.create);
+router.post('/', auth, MessageController.create);
 
 router.route('/:conversation_id')
     .get(auth, MessageController.index)
+
+router.get('/find/:id', auth, MessageController.getOne)
 
 router.route('/:conversation_id/latest')
     .get(auth, validate(messageValidation.getMessage), MessageController.latest)
@@ -23,6 +24,5 @@ router.route('/:message_id')
 
 router.route('/notification')
     .post(auth, MessageController.notification)
-
 
 module.exports = router;

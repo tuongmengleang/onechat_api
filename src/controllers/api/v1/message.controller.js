@@ -1,9 +1,10 @@
 const httpStatus = require('http-status');
+const multer = require('multer');
 const catchAsync = require('../../../utils/catchAsync');
 const Message = require('../../../models/Message');
 const getPagination = require('../../../utils/pagination');
 const ApiError = require('../../../utils/ApiError');
-const { messageService, conversationService, userService } = require('../../../services');
+const { messageService, conversationService, userService, fileService } = require('../../../services');
 const { admin } = require('../../../config/firebase');
 const { convert } = require('html-to-text');
 
@@ -12,27 +13,93 @@ const { convert } = require('html-to-text');
  *  @method POST api/v1/messages
  *  @access Public
  */
+
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 100 * 1024 * 1024 }, // 1 * 1024 * 1024 = 1MB
+}).array('files', 10);
 exports.create = catchAsync(async (req, res) => {
     try {
-        const { conversation_id, author, text } = req.body;
+        upload(req, res, async (err) => {
+            if(err) {
+                return res.status(httpStatus.BAD_REQUEST).send({ error: err.message });
+            } else {
+                const { conversation_id, author, text, is_group } = req.body;
+                const files = req.files;
+                if (files && files.length > 0) {
+                    if (is_group === 'true') {
+                        const filesUploaded = await Promise.all(
+                            files.map(file => {
+                                const data = fileService.uploadFile(req.user.user_id, file)
+                                return data
+                            })
+                        )
+                        const newMessage = new Message({
+                            conversation_id: conversation_id,
+                            author: author,
+                            text: unescapeHTML(text),
+                            files: filesUploaded,
+                            read_by: [req.user._id]
+                        });
+                        const _message = await newMessage.save();
+                        await conversationService.updateConversation(conversation_id);
+                        // emit socket new message
+                        global.io.emit("new message", _message);
+                        res.status(httpStatus.CREATED).json({ message: 'Successfully create message', data: _message });
+                    } else if (is_group === 'false') {
+                        let _message = null
+                        const filesUploaded = await Promise.all(
+                            files.map(async (file) => {
+                                await fileService.uploadFile(req.user.user_id, file)
+                                    .then(async (data) => {
+                                        // console.info('data :', data)
+                                        const newMessage = new Message({
+                                            conversation_id: conversation_id,
+                                            author: author,
+                                            text: unescapeHTML(text),
+                                            files: [data],
+                                            read_by: [req.user._id]
+                                        });
+                                        _message = await newMessage.save();
+                                        await conversationService.updateConversation(conversation_id);
+                                        // emit socket new message
+                                        global.io.emit("new message", _message);
+                                    })
+                            })
+                        );
+                        res.status(httpStatus.CREATED).json({ message: 'Successfully create message', data: _message });
+                    }
+                }
+                else {
+                    const newMessage = new Message({
+                        conversation_id: conversation_id,
+                        author: author,
+                        text: unescapeHTML(text),
+                        read_by: [req.user._id]
+                    });
+                    const _message = await newMessage.save();
+                    //update conversation updatedAt
+                    await conversationService.updateConversation(conversation_id);
+                    // emit socket new message
+                    global.io.emit("new message", _message);
+                    res.status(httpStatus.CREATED).json({ message: 'Successfully create message', data: _message });
+                }
 
-        const newMessage = new Message({
-            conversation_id: conversation_id,
-            author: author,
-            text: unescapeHTML(text),
-            read_by: [req.user._id]
-        });
+            }
+        })
 
-        const result = await newMessage.save();
-        // update conversation updatedAt
-        await conversationService.updateConversation(conversation_id);
-        // emit socket new message
-        global.io.emit("send-message", result);
-
-        res.status(httpStatus.CREATED).json({ message: 'Successfully create message', result });
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
+});
+
+/**
+ *  @desc   Upload message file
+ *  @method POST api/v1/messages
+ *  @access Public
+ */
+exports.uploadFile = catchAsync(async (req, res) => {
+    await fileService.uploadFiles(req, res)
 });
 
 /**
@@ -50,14 +117,13 @@ exports.index = catchAsync(async (req, res) => {
         await Message.paginate({ conversation_id: conversation_id }, { offset, limit, sort: { createdAt: 'desc' } })
             .then((result) => {
                 // update last messages list read_by
-                if (result.docs.length > 0) {
-                    for (let i = 0 ; i < result.docs.length ; i ++)
-                        messageService.updateMessageReadUnread(result.docs[i]._id, true)
-                    global.io.emit("read-message");
-                }
+                if (result.docs.length > 0)
+                    for (let i = 0 ; i < result.docs.length ; i ++) {
+                        if (req.user._id.toString() !== result.docs[i].author)
+                            messageService.updateMessageReadUnread(result.docs[i]._id, true)
+                    }
                 res.send({
                     messages: result.docs,
-                    // last_message: result.docs.slice(-1)[0],
                     totalItems: result.totalDocs,
                     totalPages: result.totalPages,
                     currentPage: result.page - 1
@@ -67,6 +133,21 @@ exports.index = catchAsync(async (req, res) => {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
 });
+
+/**
+ *  @desc   Get message by id
+ *  @method GET api/v1/messages/message_id
+ *  @access Public
+ */
+exports.getOne = catchAsync(async (req, res) => {
+    try {
+        const _id = req.params.id;
+        const message = await Message.findOne({_id})
+        res.send(message)
+    } catch (error) {
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
+    }
+})
 
 /**
  *  @desc   Update message read by user
@@ -83,7 +164,7 @@ exports.update = catchAsync(async (req, res) => {
                 if (!data)
                     throw new ApiError(httpStatus.NOT_FOUND, 'Message not found');
                 else {
-                    global.io.emit("update-message");
+                    global.io.emit("update-message", message_id);
                     res.status(httpStatus.OK).json({ message: 'Message has been updated', data });
                 }
             })
@@ -145,7 +226,8 @@ exports.notification = catchAsync(async (req, res) => {
         notification: {
             title: user ? user.full_name : '',
             body: convert(text),
-            icon: user ? user.image : ''
+            icon: user ? user.image : '',
+            sound: 'default'
         }
     };
 
@@ -158,8 +240,10 @@ exports.notification = catchAsync(async (req, res) => {
         })
 });
 
+
 function unescapeHTML(escapedHTML) {
-    return escapedHTML.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
+    if (escapedHTML)
+        return escapedHTML.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
 }
 
 // .replace(/\n/ig, '')
