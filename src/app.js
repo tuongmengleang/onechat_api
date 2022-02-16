@@ -58,7 +58,7 @@ if (config.env === 'production') {
 }
 
 // v1 api routes
-app.get('/', function(req, res) {
+app.get('/', async function(req, res) {
     res.send('Welcome to ONECHAT Server REST API 🔥🔥🔥')
 });
 app.use('/api/v1', routes);

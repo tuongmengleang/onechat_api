@@ -9,11 +9,42 @@ const { admin } = require('../../../config/firebase');
 const { convert } = require('html-to-text');
 
 /**
+ *  @desc   Get messages list
+ *  @method GET api/v1/messages
+ *  @access Public
+ */
+exports.index = catchAsync(async (req, res) => {
+    try {
+        const conversation_id = req.params.conversation_id;
+        const { page, size } = req.query;
+
+        const { limit, offset } = getPagination(page, size);
+
+        await Message.paginate({ conversation_id: conversation_id }, { offset, limit, sort: { createdAt: 'desc' } })
+            .then((result) => {
+                // update last messages list read_by
+                // if (result.docs.length > 0)
+                //     for (let i = 0 ; i < result.docs.length ; i ++) {
+                //         if (req.user._id.toString() !== result.docs[i].author)
+                //             messageService.updateMessageReadUnread(result.docs[i]._id, true)
+                //     }
+                res.send({
+                    messages: result.docs,
+                    totalItems: result.totalDocs,
+                    totalPages: result.totalPages,
+                    currentPage: result.page - 1
+                });
+            })
+    } catch (error) {
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
+    }
+});
+
+/**
  *  @desc   Store a new message
  *  @method POST api/v1/messages
  *  @access Public
  */
-
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 100 * 1024 * 1024 }, // 1 * 1024 * 1024 = 1MB
@@ -88,38 +119,6 @@ exports.create = catchAsync(async (req, res) => {
             }
         })
 
-    } catch (error) {
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
-    }
-});
-
-/**
- *  @desc   Get messages list
- *  @method GET api/v1/messages
- *  @access Public
- */
-exports.index = catchAsync(async (req, res) => {
-    try {
-        const conversation_id = req.params.conversation_id;
-        const { page, size } = req.query;
-
-        const { limit, offset } = getPagination(page, size);
-
-        await Message.paginate({ conversation_id: conversation_id }, { offset, limit, sort: { createdAt: 'desc' } })
-            .then((result) => {
-                // update last messages list read_by
-                if (result.docs.length > 0)
-                    for (let i = 0 ; i < result.docs.length ; i ++) {
-                        if (req.user._id.toString() !== result.docs[i].author)
-                            messageService.updateMessageReadUnread(result.docs[i]._id, true)
-                    }
-                res.send({
-                    messages: result.docs,
-                    totalItems: result.totalDocs,
-                    totalPages: result.totalPages,
-                    currentPage: result.page - 1
-                });
-            })
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
@@ -219,7 +218,7 @@ exports.notification = catchAsync(async (req, res) => {
             body: convert(text),
             icon: user ? user.image : '',
             sound: 'default'
-        }
+        },
     };
 
     admin.messaging().sendToDevice(registrationToken, message, options)

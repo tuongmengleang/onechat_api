@@ -7,7 +7,7 @@ const { UserValidation } = require('../../../validations');
 const router = express.Router();
 
 router.route('/')
-    .get(auth, UserController.getUsers)
+    .get(UserController.getUsers)
     .post(auth, UserController.create)
 // router.get('/', auth, UserController.getUsers);
 router.get('/me', auth, UserController.me)
