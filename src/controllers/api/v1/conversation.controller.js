@@ -35,22 +35,23 @@ exports.index = catchAsync(async (req, res) => {
 exports.create = catchAsync(async (req, res) => {
     try {
         const { name, creator, participants } = req.body;
-        const _conversation = new Conversation({
-            name: name,
-            creator: creator,
-            participants: participants,
-        });
-        await _conversation.save();
-        // const newConversation = await Conversation
-        //     .findOne({ _id: _conversation._id })
-        //     .populate({
-        //         path: "participants",
-        //         model: "User",
-        //         options: { limit: 1, sort: { _id: -1 } }
-        //     });
-        // ****** Socket Emit to Client
-        global.io.emit("new conversation", _conversation);
-        res.json(_conversation)
+
+        // Find Exist conversation
+        const existConversation = await Conversation.findOne({ participants: { $all: participants } })
+
+        if (!existConversation) {
+            const _conversation = new Conversation({
+                name: name,
+                creator: creator,
+                participants: participants,
+            });
+            await _conversation.save();
+
+            // ****** Socket Emit to Client
+            global.io.emit("new conversation", _conversation);
+            res.json(_conversation)
+        }
+        res.status(httpStatus.FOUND).send({ message: 'Conversation is already existed!' })
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
@@ -104,7 +105,7 @@ exports.countUnread = catchAsync(async (req, res) => {
     try {
         const userId = req.params.userId
         const result = await conversationService.countConversation(userId)
-        res.json(result)
+        res.send({ data: result })
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }

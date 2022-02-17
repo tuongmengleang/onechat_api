@@ -46,8 +46,6 @@ app.use(compression());
 app.use(cors());
 app.options('*', cors());
 
-// app.use(passport.initialize());
-// require("./middlewares/jwt")(passport);
 // jwt authentication
 app.use(passport.initialize());
 require("./config/passport")(passport);
