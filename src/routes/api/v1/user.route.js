@@ -9,8 +9,9 @@ const router = express.Router();
 router.route('/')
     .get(auth, UserController.getUsers)
     .post(auth, UserController.create)
-// router.get('/', auth, UserController.getUsers);
+
 router.get('/me', auth, UserController.me)
+
 router.route('/:userId')
     .get(auth, validate(UserValidation.getUser), UserController.getUser)
     .patch(auth, validate(UserValidation.updateUser), UserController.updateUser)

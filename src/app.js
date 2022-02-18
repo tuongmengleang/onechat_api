@@ -46,8 +46,6 @@ app.use(compression());
 app.use(cors());
 app.options('*', cors());
 
-// app.use(passport.initialize());
-// require("./middlewares/jwt")(passport);
 // jwt authentication
 app.use(passport.initialize());
 require("./config/passport")(passport);
@@ -62,7 +60,7 @@ app.get('/abc', async function(req, res) {
     res.send(headers);
 });
 // v1 api routes
-app.get('/', function(req, res) {
+app.get('/', async function(req, res) {
     res.send('Welcome to ONECHAT Server REST API 🔥🔥🔥')
 });
 app.use('/api/v1', routes);
