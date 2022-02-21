@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
+const aggregatePaginate = require("mongoose-aggregate-paginate-v2");
 const ObjectId = mongoose.Schema.ObjectId;
 
 const messageSchema = new mongoose.Schema({
@@ -20,6 +21,7 @@ const messageSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 messageSchema.plugin(mongoosePaginate);
+messageSchema.plugin(aggregatePaginate);
 
 module.exports = mongoose.model("Message", messageSchema);
 
