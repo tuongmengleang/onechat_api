@@ -1,5 +1,6 @@
 const httpStatus = require('http-status');
 const multer = require('multer');
+const axios = require('axios');
 const catchAsync = require('../../../utils/catchAsync');
 const Message = require('../../../models/Message');
 const getPagination = require('../../../utils/pagination');
@@ -7,6 +8,8 @@ const ApiError = require('../../../utils/ApiError');
 const { messageService, conversationService, userService, fileService } = require('../../../services');
 const { admin } = require('../../../config/firebase');
 const { convert } = require('html-to-text');
+const { unescapeHTML } = require('../../../utils/helpers');
+const config = require('../../../config/config');
 
 /**
  *  @desc   Get messages list
@@ -125,6 +128,52 @@ exports.create = catchAsync(async (req, res) => {
 });
 
 /**
+ *  @desc   Send a new message specific user_id
+ *  @method POST api/v1/messages/:user_id
+ *  @access Public
+ */
+exports.sendToUser = catchAsync(async (req, res) => {
+    const userId = req.params.userId;
+    const { author, text, link } = req.body;
+    const sender = await userService.getUserByUserId(author)
+    const receiver = await userService.getUserByUserId(userId)
+    // ******* Check if exist user in mongodb
+    let user_sender = null
+    let user_receiver = null
+    if (!sender) {
+        const user = await userService.fetchUserFromUvacancy(author)
+        user_sender = await userService.createUser({
+            user_id: user.user_name,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            image: user.picture_folder + `/medium/` + user.picture_file_name
+        });
+    }
+    if (!receiver) {
+        const user = await userService.fetchUserFromUvacancy(userId)
+        user_receiver = await userService.createUser({
+            user_id: user.user_name,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            image: user.picture_folder + `/medium/` + user.picture_file_name
+        });
+    }
+    // Create conversation
+    const conversation = await conversationService
+        .createConversation(null, user_sender ? user_sender._id : sender._id, [user_receiver ? user_receiver._id : receiver._id, user_sender ? user_sender._id : sender._id])
+    // Create message
+    const message = await messageService.createMessage({
+        conversation_id: conversation._id,
+        author: user_sender ? user_sender._id : sender._id,
+        text: text,
+        link: link,
+    })
+    // emit socket new message
+    global.io.emit("new message", message);
+    res.send({message})
+});
+
+/**
  *  @desc   Get message by id
  *  @method GET api/v1/messages/message_id
  *  @access Public
@@ -229,19 +278,3 @@ exports.notification = catchAsync(async (req, res) => {
             console.info(error)
         })
 });
-
-
-function unescapeHTML(escapedHTML) {
-    if (escapedHTML)
-        return escapedHTML.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
-}
-
-// .replace(/\n/ig, '')
-//     .replace(/<style[^>]*>[\s\S]*?<\/style[^>]*>/ig, '')
-//     .replace(/<head[^>]*>[\s\S]*?<\/head[^>]*>/ig, '')
-//     .replace(/<script[^>]*>[\s\S]*?<\/script[^>]*>/ig, '')
-//     .replace(/<\/\s*(?:p|div)>/ig, '\n')
-//     .replace(/<br[^>]*\/?>/ig, '\n')
-//     .replace(/<[^>]*>/ig, '')
-//     .replace('&nbsp;', ' ')
-//     .replace(/[^\S\r\n][^\S\r\n]+/ig, ' '),

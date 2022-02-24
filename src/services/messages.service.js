@@ -1,5 +1,22 @@
 // const httpStatus = require('http-status');
 const Message = require('../models/Message');
+const { unescapeHTML } = require('../utils/helpers');
+
+/**
+ * Create Message
+ * @param {ObjectId} payload
+ * @returns {Promise<Messages>}
+ */
+const createMessage = async (payload) => {
+    const newMessage = new Message({
+        conversation_id: payload.conversation_id,
+        author: payload.author,
+        text: unescapeHTML(payload.text),
+        link: payload.link
+    });
+    const message = await newMessage.save();
+    return message
+};
 
 /**
  * Update message by id
@@ -36,6 +53,7 @@ const unreadCount = async (conversation_id) => {
 }
 
 module.exports = {
+    createMessage,
     updateMessageReadUnread,
     latestMessage,
     unreadCount

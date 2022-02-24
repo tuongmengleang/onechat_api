@@ -5,6 +5,28 @@ const Message = require('../models/Message')
 const User = require('../models/User')
 
 /**
+ * Create conversation
+ * @param {String} name
+ * @param {String} creator
+ * @param {Array} participants
+ * @returns {Promise<Conversation>}
+ */
+const createConversation = async (name, creator, participants) => {
+    // Find Exist conversation
+    const conversation = await Conversation.findOne({ participants: { $all: participants } }).lean();
+    if (!conversation) {
+        const _conversation = new Conversation({
+            name: name,
+            creator: creator,
+            participants: participants,
+        });
+        await _conversation.save();
+        return _conversation
+    }
+    else return conversation
+};
+
+/**
  * Update conversation
  * @param {ObjectId} conversation_id
  * @returns {Promise<Conversation>}
@@ -51,6 +73,7 @@ const countConversation = async (userId) => {
 }
 
 module.exports = {
+    createConversation,
     updateConversation,
     findConversation,
     countConversation

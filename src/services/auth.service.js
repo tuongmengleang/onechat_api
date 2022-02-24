@@ -8,6 +8,7 @@ const userService = require('./user.service');
  */
 const loginWithToken = async (data) => {
     const user = await User.findOne({ user_id: data.user_name });
+    const imageSize = 'medium';
     // Update User
     if (user) {
         let update = {
@@ -15,7 +16,7 @@ const loginWithToken = async (data) => {
             last_name: data.last_name,
             email: data.email,
             phone: data.phone_number,
-            image: 'https://dev-api.uvacancy.com/api/v1/media?path=' + data.picture_folder + '/small/' + data.picture_file_name
+            image: data.picture_folder + `/${imageSize}/` + data.picture_file_name
         };
         const _user = await userService.updateUser(data.user_name, update)
         return _user
@@ -28,7 +29,7 @@ const loginWithToken = async (data) => {
             last_name: data.last_name,
             email: data.email,
             phone: data.phone_number,
-            image: 'https://dev-api.uvacancy.com/api/v1/media?path=' + data.picture_folder + '/small/' + data.picture_file_name
+            image: data.picture_folder + `/${imageSize}/` + data.picture_file_name
         });
         return newUser;
     }
