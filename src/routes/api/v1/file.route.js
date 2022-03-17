@@ -5,6 +5,6 @@ const fileController = require('../../../controllers/api/v1/file.controller');
 const router = express.Router();
 
 router.get('/', fileController.index);
-router.get('/image', fileController.image64);
+router.get('/:conversationId', auth, fileController.queryFiles)
 
 module.exports = router;

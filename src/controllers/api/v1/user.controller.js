@@ -56,13 +56,14 @@ exports.create = catchAsync(async (req, res) => {
             if (resp.data.code === 200) {
                 const user = await User.findOne({ user_id: resp.data.data.user_name });
                 if (!user) {
+                    console.log('user :', user)
                     const newUser = await User.create({
                         user_id: resp.data.data.user_name,
                         first_name: resp.data.data.first_name,
                         last_name: resp.data.data.last_name,
                         email: resp.data.data.email ? resp.data.data.email : '',
                         phone: resp.data.data.phone_number,
-                        image: `${config.uvacancy.endpoint_url}/api/v1/media?path=` + resp.data.data.picture_folder + '/small/' + resp.data.data.picture_file_name
+                        image: resp.data.data.picture_folder + '/medium/' + resp.data.data.picture_file_name
                     })
                     res.status(httpStatus.OK).json({ user: newUser });
                 }

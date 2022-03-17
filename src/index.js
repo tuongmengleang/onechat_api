@@ -8,12 +8,16 @@ require('./utils/WebSockets')(socketio);
 
 // *** MongoDB Connection
 mongoose.Promise = Promise;
-mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
-    logger.info('Connected to MongoDB');
-    server.listen(config.port || 3001, () => {
-        logger.info(`Listening to port ${config.port}`);
-    });
-});
+mongoose.connect(config.mongoose.url, config.mongoose.options)
+    .then(() => {
+        logger.info('Connected to MongoDB');
+        server.listen(config.port || 3001, () => {
+            logger.info(`Listening to port ${config.port}`);
+        });
+    })
+    .catch(error => {
+        logger.warn('Failed connect to MongoDB :', error);
+    })
 
 const exitHandler = () => {
     if (server) {

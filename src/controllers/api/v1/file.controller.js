@@ -1,25 +1,9 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../../../utils/catchAsync');
 const s3Client = require('../../../config/minio');
-const axios = require('axios');
 const config = require('../../../config/config');
-
-/**
- *  @desc   Get Image base64
- *  @method GET api/v1/file/image
- *  @access Public
- */
-exports.image64 = catchAsync(async (req, res) => {
-   try {
-       const path = req.query.path;
-       let publicUrl = s3Client.protocol + '//' + s3Client.host + ':' + s3Client.port + '/' + config.minio.bucketName + '/' + path;
-       const response = await axios.get(publicUrl, { responseType: 'arraybuffer' });
-       let image64 = Buffer.from(response.data).toString('base64');
-       res.json(image64)
-   } catch (error) {
-       res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
-   }
-});
+const {fileService} = require("../../../services");
+const getPagination = require("../../../utils/pagination");
 
 /**
  *  @desc   Get MinIO object storage
@@ -34,6 +18,25 @@ exports.index = catchAsync(async (req, res) => {
             if (err) return console.log(err)
             res.send(presignedUrl)
         })
+    } catch (error) {
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
+    }
+});
+
+
+/**
+ * @desc Get Media by conversation id
+ * @method GET api/v1/file/:conversationId
+ * @access Public
+ */
+exports.queryFiles = catchAsync(async (req, res) => {
+    try {
+        const conversation_id = req.params.conversationId;
+        const { page, size, category } = req.query;
+
+        const { limit, offset } = getPagination(page, size);
+        const files = await fileService.getFileByConversation(conversation_id, category, limit, offset)
+        res.json(files)
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }

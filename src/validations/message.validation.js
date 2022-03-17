@@ -5,7 +5,8 @@ const createMessage = {
     body: Joi.object().keys({
         conversation_id: Joi.required().custom(objectId),
         author: Joi.required().custom(objectId),
-        text: Joi.string().required()
+        text: Joi.string(),
+        is_group: Joi.bool()
     })
 };
 

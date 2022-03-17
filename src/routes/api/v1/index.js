@@ -27,7 +27,7 @@ const defaultRoutes = [
         route: messageRoute
     },
     {
-        path: '/file',
+        path: '/files',
         route: fileRoute
     }
 ];

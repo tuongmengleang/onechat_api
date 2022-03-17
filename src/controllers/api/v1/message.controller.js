@@ -9,7 +9,6 @@ const { messageService, conversationService, userService, fileService } = requir
 const { admin } = require('../../../config/firebase');
 const { convert } = require('html-to-text');
 const { unescapeHTML } = require('../../../utils/helpers');
-const config = require('../../../config/config');
 
 /**
  *  @desc   Get messages list

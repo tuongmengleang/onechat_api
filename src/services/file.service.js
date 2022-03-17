@@ -2,6 +2,8 @@ const sharp = require('sharp');
 const path = require('path');
 const s3Client = require('../config/minio');
 const config = require('../config/config');
+const Message = require('../models/Message');
+const getPagination = require('../utils/pagination');
 
 /**
  * Upload File to Minio S3
@@ -63,6 +65,20 @@ const uploadFile = async (userId, file) => {
     })
 };
 
+/**
+ * Get file by conversation id
+ * @param {objectId} conversationId
+ * @returns {Promise<Message>}
+ */
+const getFileByConversation = async (conversationId, category, limit, offset) => {
+    const data = await Message.paginate(
+        { conversation_id: conversationId, 'files.category': { "$in" : category } },
+        { select: 'files conversation_id' ,offset, limit }
+    )
+    return data
+}
+
 module.exports = {
     uploadFile,
+    getFileByConversation
 };

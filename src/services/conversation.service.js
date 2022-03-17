@@ -41,7 +41,12 @@ const updateConversation = async (conversation_id) => {
  * @returns {Promise<Conversation>}
  */
 const findConversation = async (creator, userId) => {
-    const result = await Conversation.findOne({ participants : { '$all': [creator.toString(), userId] } });
+    const result = await Conversation
+        .findOne({ participants : { '$all': [creator.toString(), userId] } })
+        .populate({
+            path: "participants",
+            model: "User",
+        })
     return result
 }
 
