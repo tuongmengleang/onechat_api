@@ -6,7 +6,8 @@ const createMessage = {
         conversation_id: Joi.required().custom(objectId),
         author: Joi.required().custom(objectId),
         text: Joi.string(),
-        is_group: Joi.bool()
+        is_group: Joi.bool(),
+        loading_id: Joi.string()
     })
 };
 

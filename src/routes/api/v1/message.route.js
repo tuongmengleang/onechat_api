@@ -10,7 +10,7 @@ router.get('/:conversation_id', auth, validate(MessageValidation.getMessage), Me
 router.get('/find/:id', auth, MessageController.getOne)
 router.get('/:conversation_id/latest', auth, validate(MessageValidation.getMessage), MessageController.latest)
 router.get('/:conversation_id/unread', auth, validate(MessageValidation.getMessage), MessageController.unread)
-router.post('/', auth, validate(MessageValidation.createMessage), MessageController.create)
+router.post('/', auth, MessageController.create)
 router.post('/:userId', validate(MessageValidation.sendInMessage), MessageController.sendToUser)
 router.post('/notification', auth, MessageController.notification)
 router.put('/:message_id', auth, MessageController.update);
