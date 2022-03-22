@@ -10,7 +10,6 @@ const config = require('./config/config');
 const morgan = require('./config/morgan');
 const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/api/v1');
-const mobileRoutes = require('./routes/api/mobile');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 
@@ -62,8 +61,6 @@ app.get('/', async function(req, res) {
 });
 // Route
 app.use('/api/v1', routes);
-// Route mobile
-app.use('/api/mobile', mobileRoutes);
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {

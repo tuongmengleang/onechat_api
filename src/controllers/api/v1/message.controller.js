@@ -56,53 +56,29 @@ exports.create = catchAsync(async (req, res) => {
             if(err) {
                 return res.status(httpStatus.BAD_REQUEST).send({ error: err.message });
             } else {
-                const { conversation_id, author, text, is_group, loading_id } = req.body;
+                const { conversation_id, author, text, is_compression, loading_id } = req.body;
                 const files = req.files;
                 if (files && files.length > 0) {
-                    if (is_group === 'true') {
-                        const filesUploaded = await Promise.all(
-                            files.map(file => {
-                                const data = fileService.uploadFile(req.user.user_id, file)
-                                return data
-                            })
-                        )
-                        const newMessage = new Message({
-                            conversation_id: conversation_id,
-                            author: author,
-                            text: unescapeHTML(text),
-                            files: filesUploaded,
-                            read_by: [req.user._id]
-                        });
-                        const _message = await newMessage.save();
-                        let message = Object.assign({ loading_id }, _message._doc);
-                        await conversationService.updateConversation(conversation_id);
-                        // emit socket new message
-                        global.io.emit("new message", message);
-                        res.status(httpStatus.CREATED).json({ message: 'Successfully create message', data: message });
-                    } else if (is_group === 'false') {
-                        let _message = null
-                        const filesUploaded = await Promise.all(
-                            files.map(async (file) => {
-                                await fileService.uploadFile(req.user.user_id, file)
-                                    .then(async (data) => {
-                                        // console.info('data :', data)
-                                        const newMessage = new Message({
-                                            conversation_id: conversation_id,
-                                            author: author,
-                                            text: unescapeHTML(text),
-                                            files: [data],
-                                            read_by: [req.user._id]
-                                        });
-                                        _message = await newMessage.save();
-                                        let message = Object.assign({ loading_id }, _message._doc);
-                                        await conversationService.updateConversation(conversation_id);
-                                        // emit socket new message
-                                        global.io.emit("new message", message);
-                                    })
-                            })
-                        );
-                        res.status(httpStatus.CREATED).json({ message: 'Successfully create message', data: message });
-                    }
+                    const filesUploaded = await Promise.all(
+                        files.map(file => {
+                            const data = fileService.uploadFile(req.user.user_id, file, is_compression)
+                            return data
+                        })
+                    )
+                    const newMessage = new Message({
+                        conversation_id: conversation_id,
+                        author: author,
+                        text: unescapeHTML(text),
+                        files: filesUploaded,
+                        is_compression: is_compression,
+                        read_by: [req.user._id]
+                    });
+                    const _message = await newMessage.save();
+                    let message = Object.assign({ loading_id }, _message._doc);
+                    await conversationService.updateConversation(conversation_id);
+                    // emit socket new message
+                    global.io.emit("new message", message);
+                    res.status(httpStatus.CREATED).json({ message: 'Successfully create message', data: message });
                 }
                 else {
                     const newMessage = new Message({
