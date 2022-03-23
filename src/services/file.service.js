@@ -39,6 +39,7 @@ const uploadFile = async (userId, file, is_compression) => {
                         resolve({ src: objectName, name: file.originalname, extension, size: data.byteLength, category: 'image' })
                     })
                     .catch( error => {
+                        console.log('error :', error)
                         reject(error)
                     });
             else {
@@ -76,7 +77,7 @@ const uploadFile = async (userId, file, is_compression) => {
 const getFileByConversation = async (conversationId, category, limit, offset) => {
     const data = await Message.paginate(
         { conversation_id: conversationId, 'files.category': { "$in" : category } },
-        { select: 'files conversation_id' ,offset, limit }
+        { select: 'files' ,offset, limit }
     )
     return data
 }
