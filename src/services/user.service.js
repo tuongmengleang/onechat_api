@@ -70,7 +70,7 @@ const getUserByUserId = async (user_id) => {
  */
 const updateUserActive = async (userId, is_active) => {
     const user = await User.findOneAndUpdate({ user_id: userId }, { is_active: is_active, last_active: Date.now() });
-    if (user) global.io.emit('user online', user._id);
+    if (user) global.io.emit('active-user', { userId: user._id, status: is_active});
 };
 
 /**

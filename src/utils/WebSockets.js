@@ -40,8 +40,10 @@ module.exports = (io) => {
             _.remove(users[socket.userId], (u) => u === socket.id)
             if (users[socket.userId] && users[socket.userId].length === 0) {
                 // USER IS OFFLINE BROAD CAST TO ALL CONNECTED USERS
+                console.log('userId :', socket.userId)
                 userService.updateUserActive(socket.userId, false)
                 // REMOVE OBJECT
+                console.log('user offline is :', socket.userId)
                 delete users[socket.userId];
             }
             socket.disconnect(); // DISCONNECT SOCKET
