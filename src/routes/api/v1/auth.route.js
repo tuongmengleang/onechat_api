@@ -9,6 +9,8 @@ router.post('/login', validate(authValidation.login), authController.login);
 
 router.post('/signup', validate(authValidation.login), authController.signup);
 
+router.post('/login-uvacancy', authController.loginWithUvacancy);
+
 module.exports = router;
 
 /**

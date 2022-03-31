@@ -46,3 +46,18 @@ exports.signup = catchAsync(async (req, res) => {
             throw new ApiError(httpStatus.UNAUTHORIZED, resp.data.message);
     });
 })
+
+exports.loginWithUvacancy = catchAsync(async (req, res) => {
+    await axios.post(`${config.uvacancy.endpoint_url}/api/v1/login`, {
+        username: 'leang.dev@gmail.com',
+        password: 'Welcome.1'
+    })
+        .then((data) => {
+            // console.log('data :', data)
+            res.status(httpStatus.CREATED).json(data.data);
+        })
+        .catch((error) => {
+            console.log('error :', error)
+            throw new ApiError(httpStatus.UNAUTHORIZED, error);
+        })
+})

@@ -22,6 +22,10 @@ module.exports = (io) => {
             socket.broadcast.emit('user-typing', data);
         })
 
+        socket.on('read-message', (data) => {
+            console.log('read message :', data)
+        })
+
         socket.on('reconnecting', function() {
             socket.connect();
         });
