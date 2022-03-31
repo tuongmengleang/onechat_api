@@ -27,3 +27,22 @@ exports.login = catchAsync(async (req, res) => {
             throw new ApiError(httpStatus.UNAUTHORIZED, resp.data.message);
     });
 });
+
+exports.signup = catchAsync(async (req, res) => {
+    const { access_token, token } = req.body;
+
+    await axios.post(`${config.uvacancy.endpoint_url}/api/v1/profile/info`, {}, {
+        headers: {
+            'Authorization': `Bearer ${access_token}`,
+            'token': token
+        }
+    }).then(async (resp) => {
+        console.log('resp :', resp)
+        if (resp.data.code === 200) {
+            const user = await authService.loginWithToken(resp.data.data);
+            res.status(httpStatus.CREATED).send({ user, token: user.generateAuthToken() });
+        }
+        else
+            throw new ApiError(httpStatus.UNAUTHORIZED, resp.data.message);
+    });
+})
