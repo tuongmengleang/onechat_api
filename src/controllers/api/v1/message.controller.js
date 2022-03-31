@@ -89,7 +89,6 @@ exports.create = catchAsync(async (req, res) => {
                     });
                     const _message = await newMessage.save();
                     let message = Object.assign({ loading_id }, _message._doc);
-                    // _message.loading_id = loading_id
                     //update conversation updatedAt
                     await conversationService.updateConversation(conversation_id);
                     // emit socket new message

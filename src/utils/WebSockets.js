@@ -18,8 +18,8 @@ module.exports = (io) => {
             userService.updateUserActive(userId, true);
         });
 
-        socket.on('typing', (data) => {
-            socket.broadcast.emit('typing', data);
+        socket.on('user-typing', (data) => {
+            socket.broadcast.emit('user-typing', data);
         })
 
         socket.on('reconnecting', function() {
