@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-// const fs = require('fs');
+const fs = require('fs');
 const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
@@ -11,7 +11,7 @@ const logger = require('./config/logger');
 //     key: fs.readFileSync(__dirname + '/ssl/uvacancy.key')
 // }
 
-const server = require('https').createServer(app);
+const server = require('http').createServer(app);
 const socketio = require('socket.io')(server, { cors: { origin: '*' } });
 require('./utils/WebSockets')(socketio);
 

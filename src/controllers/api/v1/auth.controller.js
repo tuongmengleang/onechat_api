@@ -1,10 +1,13 @@
 const axios = require('axios');
+const httpsProxyAgent = require("https-proxy-agent");
 const httpStatus = require('http-status');
 const ApiError = require('../../../utils/ApiError');
 const catchAsync = require('../../../utils/catchAsync');
 const { authService } = require('../../../services');
 const { decrypt } = require('../../../utils/crypto');
 const config = require('../../../config/config');
+
+const agent = new httpsProxyAgent(`${config.uvacancy.endpoint_url}`);
 /**
  *  @desc   Log in User from UVACANCY
  *  @method POST
@@ -13,7 +16,9 @@ const config = require('../../../config/config');
 exports.login = catchAsync(async (req, res) => {
     const { access_token, token } = req.body;
 
-    await axios.post(`${config.uvacancy.endpoint_url}/api/v1/profile/info`, {}, {
+    await axios.post(`${config.uvacancy.endpoint_url}/api/v1/profile/info`, {
+        httpAgent: agent
+    }, {
         headers: {
             'Authorization': `Bearer ${decrypt(access_token).replace(/['"]+/g, '')}`,
             'token': decrypt(token).replace(/['"]+/g, '')
