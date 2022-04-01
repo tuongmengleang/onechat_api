@@ -11,6 +11,8 @@ router.post('/signup', validate(authValidation.login), authController.signup);
 
 router.post('/login-uvacancy', authController.loginWithUvacancy);
 
+router.post('/get-country', authController.getCountry);
+
 module.exports = router;
 
 /**

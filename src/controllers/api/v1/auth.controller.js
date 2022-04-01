@@ -37,7 +37,6 @@ exports.signup = catchAsync(async (req, res) => {
             'token': token
         }
     }).then(async (resp) => {
-        console.log('resp :', resp)
         if (resp.data.code === 200) {
             const user = await authService.loginWithToken(resp.data.data);
             res.status(httpStatus.CREATED).send({ user, token: user.generateAuthToken() });
@@ -53,11 +52,20 @@ exports.loginWithUvacancy = catchAsync(async (req, res) => {
         password: 'Welcome.1'
     })
         .then((data) => {
-            // console.log('data :', data)
+            console.log('data :', data)
             res.status(httpStatus.CREATED).json(data.data);
         })
         .catch((error) => {
             console.log('error :', error)
             throw new ApiError(httpStatus.UNAUTHORIZED, error);
         })
+})
+
+exports.getCountry = catchAsync(async (req, res) => {
+    await axios.post(`https://appapi.uvacancy.com/api/v1/country`)
+        .then((data) => {
+            // console.log('data :', data.data)
+            res.json(data.data);
+        })
+        .catch(err => console.log('error :', err))
 })

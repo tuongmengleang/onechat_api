@@ -24,8 +24,9 @@ const createMessage = async (payload) => {
  * @returns {Promise<Messages>}
  */
 const updateMessageReadUnread = async (_id, is_read) => {
-    // await Message.update({ _id: _id }, { $addToSet: {read_by: [user_id], $set: { is_read: is_read }} }, { multi: true })
-    await Message.update({ _id: _id }, { $set: { is_read: is_read } }, { multi: true })
+    const message = await Message.findOneAndUpdate({ _id }, { is_read: is_read }, { new: true })
+    global.io.emit('read-message', message)
+    // console.log('message :', message);
 };
 
 /**

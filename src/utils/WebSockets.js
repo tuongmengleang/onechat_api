@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const { userService } = require('../services');
+const { userService, messageService } = require('../services');
 const users = [];
 
 module.exports = (io) => {
@@ -22,7 +22,8 @@ module.exports = (io) => {
             socket.broadcast.emit('user-typing', data);
         })
 
-        socket.on('read-message', (data) => {
+        socket.on('read-message', async (data) => {
+            await messageService.updateMessageReadUnread(data, true)
             console.log('read message :', data)
         })
 
