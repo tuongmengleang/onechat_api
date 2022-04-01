@@ -7,7 +7,7 @@ const { authService } = require('../../../services');
 const { decrypt } = require('../../../utils/crypto');
 const config = require('../../../config/config');
 
-const agent = new httpsProxyAgent(`${config.uvacancy.endpoint_url}`);
+const agent = new httpsProxyAgent(`http://localhost:${config.port}`);
 /**
  *  @desc   Log in User from UVACANCY
  *  @method POST
@@ -67,7 +67,9 @@ exports.loginWithUvacancy = catchAsync(async (req, res) => {
 })
 
 exports.getCountry = catchAsync(async (req, res) => {
-    await axios.post(`https://appapi.uvacancy.com/api/v1/country`)
+    await axios.post(`https://appapi.uvacancy.com/api/v1/country`, {
+        httpAgent: agent
+    })
         .then((data) => {
             // console.log('data :', data.data)
             res.json(data.data);
