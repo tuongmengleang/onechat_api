@@ -1,17 +1,17 @@
 const mongoose = require('mongoose');
-const fs = require('fs');
+// const fs = require('fs');
 const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
 
 // ssl
-const httpsOptions = {
-    cert: fs.readFileSync(__dirname + '/ssl/__uvacancy_com.crt'),
-    ca: fs.readFileSync(__dirname + '/ssl/__uvacancy_com.ca-bundle'),
-    key: fs.readFileSync(__dirname + '/ssl/uvacancy.key')
-}
+// const httpsOptions = {
+//     cert: fs.readFileSync(__dirname + '/ssl/__uvacancy_com.crt'),
+//     ca: fs.readFileSync(__dirname + '/ssl/__uvacancy_com.ca-bundle'),
+//     key: fs.readFileSync(__dirname + '/ssl/uvacancy.key')
+// }
 
-const server = require('https').createServer(httpsOptions, app);
+const server = require('https').createServer(app);
 const socketio = require('socket.io')(server, { cors: { origin: '*' } });
 require('./utils/WebSockets')(socketio);
 
