@@ -4,7 +4,7 @@
   "description": "Project for building Real-time chat RESTful APIs and microservices using Node.js, Express and MongoDB",
   "main": "src/index.js",
   "engines": {
-    "node": "14.x"
+    "node": "16.x"
   },
   "scripts": {
     "start": "pm2 start ecosystem.config.json --no-daemon",

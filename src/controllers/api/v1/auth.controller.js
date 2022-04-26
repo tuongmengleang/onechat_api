@@ -13,9 +13,7 @@ const config = require('../../../config/config');
 exports.login = catchAsync(async (req, res) => {
     const { access_token, token } = req.body;
 
-    await axios.post(`${config.uvacancy.endpoint_url}/api/v1/profile/info`, {
-        httpAgent: agent
-    }, {
+    await axios.post(`${config.uvacancy.endpoint_url}/api/v1/profile/info`, {}, {
         headers: {
             'Authorization': `Bearer ${decrypt(access_token).replace(/['"]+/g, '')}`,
             'token': decrypt(token).replace(/['"]+/g, '')

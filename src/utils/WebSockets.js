@@ -22,9 +22,8 @@ module.exports = (io) => {
             socket.broadcast.emit('user-typing', data);
         })
 
-        socket.on('read-message', async (data) => {
-            await messageService.updateMessageReadUnread(data, true)
-            console.log('read message :', data)
+        socket.on('read-message', async (payload) => {
+            await messageService.updateMessageReadUnread(payload, true)
         })
 
         socket.on('reconnecting', function() {

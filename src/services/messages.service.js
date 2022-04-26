@@ -23,10 +23,15 @@ const createMessage = async (payload) => {
  * @param {ObjectId} id
  * @returns {Promise<Messages>}
  */
-const updateMessageReadUnread = async (_id, is_read) => {
-    const message = await Message.findOneAndUpdate({ _id }, { is_read: is_read }, { new: true })
-    global.io.emit('read-message', message)
-    // console.log('message :', message);
+const updateMessageReadUnread = async (payload, is_read) => {
+    try {
+        // const message = await Message.findOneAndUpdate({ _id }, { is_read: is_read }, { new: true })
+        await Message.updateMany({ is_read: false }, { is_read }, {upsert: true})
+        // console.log('data :', data);
+        global.io.emit('read-message', payload)
+    } catch (error) {
+        console.log('error :', error)
+    }
 };
 
 /**
