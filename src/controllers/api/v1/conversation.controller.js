@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../../../utils/catchAsync');
 const Conversation = require('../../../models/Conversation');
+const Message = require('../../../models/Message');
 const ApiError = require('../../../utils/ApiError');
 const { conversationService } = require('../../../services')
 
@@ -19,7 +20,8 @@ exports.index = catchAsync(async (req, res) => {
                 model: "User",
             })
             .sort({ updatedAt: -1 })
-        // global.io.emit("new conversation");
+        // emit socket new conversation
+        // global.io.emit("new conversation", conversations);
         res.json(conversations);
 
     } catch (error) {
@@ -45,13 +47,17 @@ exports.create = catchAsync(async (req, res) => {
                 creator: creator,
                 participants: participants,
             });
-            await _conversation.save();
 
-            // ****** Socket Emit to Client
-            global.io.emit("new conversation", _conversation);
-            res.json(_conversation)
+            _conversation.save(function(err, conversation) {
+                Conversation.findOne(conversation).populate('participants').exec(function (err, newConversation) {
+                    if (err) res.json({ message: err })
+                    // ****** Socket Emit to Client
+                    global.io.emit("new conversation", newConversation);
+                    res.json(newConversation)
+                });
+            });
         }
-        res.status(httpStatus.FOUND).send({ message: 'Conversation is already existed!' })
+        else res.status(httpStatus.FOUND).send({ message: 'Conversation is already existed!' })
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }

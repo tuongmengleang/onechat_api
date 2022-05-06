@@ -1,6 +1,8 @@
 const httpStatus = require('http-status');
+const axios = require('axios');
 const User = require('../models/User');
 const ApiError = require('../utils/ApiError');
+const config = require('../config/config');
 
 /**
  * Create a user
@@ -12,6 +14,18 @@ const createUser = async (userBody) => {
         throw new ApiError(httpStatus.BAD_REQUEST, 'User already taken');
     }
     return await User.create(userBody);
+};
+
+/**
+ * Create a user from uvcancy
+ * @param {String} user_name
+ * @returns {Promise<User>}
+ */
+const fetchUserFromUvacancy = async (user_name) => {
+    const resp = await axios.post(`${config.uvacancy.endpoint_url}/api/v1/get-profile`, {
+        user_name: user_name
+    })
+    return resp.data.data
 };
 
 /**
@@ -40,6 +54,15 @@ const getUserById = async (id) => {
 };
 
 /**
+ * Get user by user_id
+ * @param {ObjectId} user_id
+ * @returns {Promise<User>}
+ */
+const getUserByUserId = async (user_id) => {
+    return User.findOne({user_id});
+};
+
+/**
  * Update user status active (online)
  * @param {ObjectId} _id
  * @param {Boolean} is_active
@@ -47,7 +70,7 @@ const getUserById = async (id) => {
  */
 const updateUserActive = async (userId, is_active) => {
     const user = await User.findOneAndUpdate({ user_id: userId }, { is_active: is_active, last_active: Date.now() });
-    if (user) global.io.emit('user online', user._id);
+    if (user) global.io.emit('active-user', { userId: user._id, status: is_active});
 };
 
 /**
@@ -79,8 +102,10 @@ const updateUser = async (userId, update) => {
 
 module.exports = {
     createUser,
+    fetchUserFromUvacancy,
     queryUsers,
     getUserById,
+    getUserByUserId,
     updateUserActive,
     updateUserById,
     updateUser,

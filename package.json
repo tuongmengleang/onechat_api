@@ -1,8 +1,11 @@
 {
   "name": "onechat",
   "version": "1.0.0",
-  "description": "Boilerplate/Generator/Starter Project for building Real-time chat RESTful APIs and microservices using Node.js, Express and MongoDB",
+  "description": "Project for building Real-time chat RESTful APIs and microservices using Node.js, Express and MongoDB",
   "main": "src/index.js",
+  "engines": {
+    "node": "16.x"
+  },
   "scripts": {
     "start": "pm2 start ecosystem.config.json --no-daemon",
     "dev": "cross-env NODE_ENV=development nodemon src/index.js",
@@ -56,6 +59,7 @@
     "http-status": "^1.5.0",
     "joi": "^17.4.2",
     "jsonwebtoken": "^8.5.1",
+    "link-preview-js": "^2.1.13",
     "lodash": "^4.17.21",
     "minio": "^7.0.25",
     "moment": "^2.29.1",

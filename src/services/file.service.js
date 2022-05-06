@@ -2,6 +2,7 @@ const sharp = require('sharp');
 const path = require('path');
 const s3Client = require('../config/minio');
 const config = require('../config/config');
+const Message = require('../models/Message');
 
 /**
  * Upload File to Minio S3
@@ -20,7 +21,7 @@ const videoExtensions = [
     '.mkv',
     '.avi'
 ];
-const uploadFile = async (userId, file) => {
+const uploadFile = async (userId, file, is_compression) => {
     const currentTime = new Date();
     const currentYear = currentTime.getFullYear();
     const currentMonth = currentTime.getMonth() + 1;
@@ -29,20 +30,25 @@ const uploadFile = async (userId, file) => {
         const extension = file.originalname.slice((Math.max(0, file.originalname.lastIndexOf(".")) || Infinity) + 1);
         if (imageExtensions.includes(extname)) {
             const objectName = userId + '/' + currentYear + '/' + currentMonth + '/' + 'images/' + `${Date.now()}-${file.originalname}`;
-            await sharp(file.buffer)
-                // .resize(1000)
-                // .jpeg({ progressive: true, force: false })
-                // .png({ compressionLevel: 9, adaptiveFiltering: true, force: true })
-                .webp({ quality: 20 })
-                // .png({quality: 95, compression: 6,})
-                .toBuffer()
-                .then(async (data) => {
-                    await s3Client.putObject(config.minio.bucketName, objectName, data)
+            if (is_compression === '1')
+                await sharp(file.buffer)
+                    .webp({ quality: 20 })
+                    .toBuffer()
+                    .then(async (data) => {
+                        await s3Client.putObject(config.minio.bucketName, objectName, data)
+                        resolve({ src: objectName, name: file.originalname, extension, size: data.byteLength, category: 'image' })
+                    })
+                    .catch( error => {
+                        console.log('error :', error)
+                        reject(error)
+                    });
+            else {
+                await s3Client.putObject(config.minio.bucketName, objectName, file.buffer, (err, etag) => {
+                    if (err)
+                        reject(err)
                     resolve({ src: objectName, name: file.originalname, extension, size: file.size, category: 'image' })
                 })
-                .catch( error => {
-                    reject(error)
-                });
+            }
         }
         else if (videoExtensions.includes(extname)) {
             const objectName = userId + '/' + currentYear + '/' + currentMonth + '/' + 'videos/' + `${Date.now()}-${file.originalname}`;
@@ -63,6 +69,20 @@ const uploadFile = async (userId, file) => {
     })
 };
 
+/**
+ * Get file by conversation id
+ * @param {objectId} conversationId
+ * @returns {Promise<Message>}
+ */
+const getFileByConversation = async (conversationId, category, limit, offset) => {
+    const data = await Message.paginate(
+        { conversation_id: conversationId, 'files.category': { "$in" : category } },
+        { select: 'files' ,offset, limit }
+    )
+    return data
+}
+
 module.exports = {
     uploadFile,
+    getFileByConversation
 };

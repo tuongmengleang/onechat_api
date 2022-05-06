@@ -14,6 +14,7 @@ const messageSchema = new mongoose.Schema({
         size: Number,
         category: String
     }],
+    is_compression: { type: Number, default: 1 },
     link: { type: String, max: 500 },
     delete_by: { type: Array },
     read_by: { type: Array },

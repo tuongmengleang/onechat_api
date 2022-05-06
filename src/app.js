@@ -63,6 +63,7 @@ app.get('/abc', async function(req, res) {
 app.get('/', async function(req, res) {
     res.send('Welcome to ONECHAT Server REST API 🔥🔥🔥')
 });
+// Route
 app.use('/api/v1', routes);
 
 // send back a 404 error for any unknown api request

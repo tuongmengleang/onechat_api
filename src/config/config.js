@@ -61,5 +61,7 @@ module.exports = {
     cors: {
         origin: envVars.CORS_ORIGIN
     },
-    uvacancy_endpoint_url: envVars.UVACANCY_ENDPOINT_URL
+    uvacancy: {
+        endpoint_url: envVars.UVACANCY_ENDPOINT_URL
+    }
 };

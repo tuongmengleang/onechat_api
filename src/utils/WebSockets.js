@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const { userService } = require('../services');
+const { userService, messageService } = require('../services');
 const users = [];
 
 module.exports = (io) => {
@@ -18,8 +18,12 @@ module.exports = (io) => {
             userService.updateUserActive(userId, true);
         });
 
-        socket.on('typing', (data) => {
-            socket.broadcast.emit('typing', data);
+        socket.on('user-typing', (data) => {
+            socket.broadcast.emit('user-typing', data);
+        })
+
+        socket.on('read-message', async (payload) => {
+            await messageService.updateMessageReadUnread(payload, true)
         })
 
         socket.on('reconnecting', function() {
@@ -40,8 +44,10 @@ module.exports = (io) => {
             _.remove(users[socket.userId], (u) => u === socket.id)
             if (users[socket.userId] && users[socket.userId].length === 0) {
                 // USER IS OFFLINE BROAD CAST TO ALL CONNECTED USERS
+                console.log('userId :', socket.userId)
                 userService.updateUserActive(socket.userId, false)
                 // REMOVE OBJECT
+                console.log('user offline is :', socket.userId)
                 delete users[socket.userId];
             }
             socket.disconnect(); // DISCONNECT SOCKET

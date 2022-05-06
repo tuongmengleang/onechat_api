@@ -4,7 +4,7 @@ const config = require('../config/config');
 const swaggerDef = {
     openapi: '3.0.0',
     info: {
-        title: 'Onechat API documentation',
+        title: 'Chat UVACANCY API documentation',
         version,
         license: {
             name: 'MIT',

@@ -1,14 +1,37 @@
 // const httpStatus = require('http-status');
 const Message = require('../models/Message');
+const { unescapeHTML } = require('../utils/helpers');
+
+/**
+ * Create Message
+ * @param {ObjectId} payload
+ * @returns {Promise<Messages>}
+ */
+const createMessage = async (payload) => {
+    const newMessage = new Message({
+        conversation_id: payload.conversation_id,
+        author: payload.author,
+        text: unescapeHTML(payload.text),
+        link: payload.link
+    });
+    const message = await newMessage.save();
+    return message
+};
 
 /**
  * Update message by id
  * @param {ObjectId} id
  * @returns {Promise<Messages>}
  */
-const updateMessageReadUnread = async (_id, is_read) => {
-    // await Message.update({ _id: _id }, { $addToSet: {read_by: [user_id], $set: { is_read: is_read }} }, { multi: true })
-    await Message.update({ _id: _id }, { $set: { is_read: is_read } }, { multi: true })
+const updateMessageReadUnread = async (payload, is_read) => {
+    try {
+        // const message = await Message.findOneAndUpdate({ _id }, { is_read: is_read }, { new: true })
+        await Message.updateMany({ is_read: false }, { is_read }, {upsert: true})
+        // console.log('data :', data);
+        global.io.emit('read-message', payload)
+    } catch (error) {
+        console.log('error :', error)
+    }
 };
 
 /**
@@ -36,6 +59,7 @@ const unreadCount = async (conversation_id) => {
 }
 
 module.exports = {
+    createMessage,
     updateMessageReadUnread,
     latestMessage,
     unreadCount

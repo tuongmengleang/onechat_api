@@ -7,6 +7,7 @@ const ApiError = require('../../../utils/ApiError');
 const { messageService, conversationService, userService, fileService } = require('../../../services');
 const { admin } = require('../../../config/firebase');
 const { convert } = require('html-to-text');
+const { unescapeHTML } = require('../../../utils/helpers');
 
 /**
  *  @desc   Get messages list
@@ -55,51 +56,29 @@ exports.create = catchAsync(async (req, res) => {
             if(err) {
                 return res.status(httpStatus.BAD_REQUEST).send({ error: err.message });
             } else {
-                const { conversation_id, author, text, is_group } = req.body;
+                const { conversation_id, author, text, is_compression, loading_id } = req.body;
                 const files = req.files;
                 if (files && files.length > 0) {
-                    if (is_group === 'true') {
-                        const filesUploaded = await Promise.all(
-                            files.map(file => {
-                                const data = fileService.uploadFile(req.user.user_id, file)
-                                return data
-                            })
-                        )
-                        const newMessage = new Message({
-                            conversation_id: conversation_id,
-                            author: author,
-                            text: unescapeHTML(text),
-                            files: filesUploaded,
-                            read_by: [req.user._id]
-                        });
-                        const _message = await newMessage.save();
-                        await conversationService.updateConversation(conversation_id);
-                        // emit socket new message
-                        global.io.emit("new message", _message);
-                        res.status(httpStatus.CREATED).json({ message: 'Successfully create message', data: _message });
-                    } else if (is_group === 'false') {
-                        let _message = null
-                        const filesUploaded = await Promise.all(
-                            files.map(async (file) => {
-                                await fileService.uploadFile(req.user.user_id, file)
-                                    .then(async (data) => {
-                                        // console.info('data :', data)
-                                        const newMessage = new Message({
-                                            conversation_id: conversation_id,
-                                            author: author,
-                                            text: unescapeHTML(text),
-                                            files: [data],
-                                            read_by: [req.user._id]
-                                        });
-                                        _message = await newMessage.save();
-                                        await conversationService.updateConversation(conversation_id);
-                                        // emit socket new message
-                                        global.io.emit("new message", _message);
-                                    })
-                            })
-                        );
-                        res.status(httpStatus.CREATED).json({ message: 'Successfully create message', data: _message });
-                    }
+                    const filesUploaded = await Promise.all(
+                        files.map(file => {
+                            const data = fileService.uploadFile(req.user.user_id, file, is_compression)
+                            return data
+                        })
+                    )
+                    const newMessage = new Message({
+                        conversation_id: conversation_id,
+                        author: author,
+                        text: unescapeHTML(text),
+                        files: filesUploaded,
+                        is_compression: is_compression,
+                        read_by: [req.user._id]
+                    });
+                    const _message = await newMessage.save();
+                    let message = Object.assign({ loading_id }, _message._doc);
+                    await conversationService.updateConversation(conversation_id);
+                    // emit socket new message
+                    global.io.emit("new message", message);
+                    res.status(httpStatus.CREATED).json({ message: 'Successfully create message', data: message });
                 }
                 else {
                     const newMessage = new Message({
@@ -109,11 +88,12 @@ exports.create = catchAsync(async (req, res) => {
                         read_by: [req.user._id]
                     });
                     const _message = await newMessage.save();
+                    let message = Object.assign({ loading_id }, _message._doc);
                     //update conversation updatedAt
                     await conversationService.updateConversation(conversation_id);
                     // emit socket new message
-                    global.io.emit("new message", _message);
-                    res.status(httpStatus.CREATED).json({ message: 'Successfully create message', data: _message });
+                    global.io.emit("new message", message);
+                    res.status(httpStatus.CREATED).json({ message: 'Successfully create message', data: message });
                 }
 
             }
@@ -122,6 +102,52 @@ exports.create = catchAsync(async (req, res) => {
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
+});
+
+/**
+ *  @desc   Send a new message specific user_id
+ *  @method POST api/v1/messages/:user_id
+ *  @access Public
+ */
+exports.sendToUser = catchAsync(async (req, res) => {
+    const userId = req.params.userId;
+    const { author, text, link } = req.body;
+    const sender = await userService.getUserByUserId(author)
+    const receiver = await userService.getUserByUserId(userId)
+    // ******* Check if exist user in mongodb
+    let user_sender = null
+    let user_receiver = null
+    if (!sender) {
+        const user = await userService.fetchUserFromUvacancy(author)
+        user_sender = await userService.createUser({
+            user_id: user.user_name,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            image: user.picture_folder + `/medium/` + user.picture_file_name
+        });
+    }
+    if (!receiver) {
+        const user = await userService.fetchUserFromUvacancy(userId)
+        user_receiver = await userService.createUser({
+            user_id: user.user_name,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            image: user.picture_folder + `/medium/` + user.picture_file_name
+        });
+    }
+    // Create conversation
+    const conversation = await conversationService
+        .createConversation(null, user_sender ? user_sender._id : sender._id, [user_receiver ? user_receiver._id : receiver._id, user_sender ? user_sender._id : sender._id])
+    // Create message
+    const message = await messageService.createMessage({
+        conversation_id: conversation._id,
+        author: user_sender ? user_sender._id : sender._id,
+        text: text,
+        link: link,
+    })
+    // emit socket new message
+    global.io.emit("new message", message);
+    res.send({message})
 });
 
 /**
@@ -229,19 +255,3 @@ exports.notification = catchAsync(async (req, res) => {
             console.info(error)
         })
 });
-
-
-function unescapeHTML(escapedHTML) {
-    if (escapedHTML)
-        return escapedHTML.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
-}
-
-// .replace(/\n/ig, '')
-//     .replace(/<style[^>]*>[\s\S]*?<\/style[^>]*>/ig, '')
-//     .replace(/<head[^>]*>[\s\S]*?<\/head[^>]*>/ig, '')
-//     .replace(/<script[^>]*>[\s\S]*?<\/script[^>]*>/ig, '')
-//     .replace(/<\/\s*(?:p|div)>/ig, '\n')
-//     .replace(/<br[^>]*\/?>/ig, '\n')
-//     .replace(/<[^>]*>/ig, '')
-//     .replace('&nbsp;', ' ')
-//     .replace(/[^\S\r\n][^\S\r\n]+/ig, ' '),

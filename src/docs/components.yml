@@ -1,0 +1,122 @@
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        user_id:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        type:
+          type: number
+        image:
+          type: string
+        is_active:
+          type: boolean
+        last_active:
+          type: date
+        last_login:
+          type: date
+        device_id:
+          type: string
+      example:
+        _id: 621336937374b9b6d57ff0f0
+        user_id: U21102500080
+        first_name: John
+        last_name: Deo
+        email: fake@example.com
+        phone: +85512345678
+        type: 1
+        image: uploads/eccbc87e4b5ce2fe28308fd9f2a7baf3/2021/12/images/medium/blob-20211214101350.
+        is_active: true
+        last_login: 2022-02-21T06:51:43.016Z
+        last_active: 2022-02-24T03:21:25.190Z
+        full_name: John Deo
+
+    Message:
+      type: object
+      properties:
+        conversation_id:
+          type: string
+        author:
+          type: string
+        text:
+          type: string
+        link:
+          type: string
+        delete_by:
+          type: array
+        read_by:
+          type: array
+        is_read:
+          type: boolean
+        files:
+          type: array
+      example:
+        conversation_id: 62172a039f03593368692371
+        author: U21102500080
+        text: Hello 😍
+        link: https://dribbble.com/shots/17470913-Chatdong-Chatting-Desktop-Ver
+        delete_by: []
+        read_by: []
+        is_read: false
+        files: []
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+
+  responses:
+    DuplicateEmail:
+      description: Email already taken
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 400
+            message: Email already taken
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 401
+            message: Please authenticate
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 403
+            message: Forbidden
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 404
+            message: Not found
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
