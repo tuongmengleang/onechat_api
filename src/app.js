@@ -12,7 +12,6 @@ const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/api/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
-const { curly } = require('node-libcurl')
 // redis
 // require('./utils/redis');
 
@@ -54,11 +53,7 @@ require("./config/passport")(passport);
 if (config.env === 'production') {
     app.use('/api/v1/auth', authLimiter);
 }
-app.get('/abc', async function(req, res) {
-    const { statusCode, data, headers ,body} = await curly.get('http://139.59.230.75:9000/onechat-dev/U22011400967/2022/2/images/1644375509772-evolution-of-meta-tag-generators-6079615ce5d2f-1520x800.png');
-    // console.log(data);
-    res.send(headers);
-});
+
 // v1 api routes
 app.get('/', async function(req, res) {
     res.send('Welcome to ONECHAT Server REST API 🔥🔥🔥')
