@@ -18,6 +18,16 @@ module.exports = (io) => {
             userService.updateUserActive(userId, true);
         });
 
+        // ======= LISTEN USER OFFLINE =======
+        socket.on('offline', userId => {
+            _.remove(users[userId], (u) => u === socket.id)
+            if (users[socket.userId]) {
+                userService.updateUserActive(socket.userId, false)
+                console.log('socket.userId :', socket.userId);
+                delete users[socket.userId];
+            }
+        });
+
         socket.on('user-typing', (data) => {
             socket.broadcast.emit('user-typing', data);
         })
@@ -47,7 +57,7 @@ module.exports = (io) => {
                 console.log('userId :', socket.userId)
                 userService.updateUserActive(socket.userId, false)
                 // REMOVE OBJECT
-                console.log('user offline is :', socket.userId)
+                // console.log('user offline is :', socket.userId)
                 delete users[socket.userId];
             }
             socket.disconnect(); // DISCONNECT SOCKET
