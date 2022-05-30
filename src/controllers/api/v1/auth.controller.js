@@ -23,7 +23,9 @@ exports.login = catchAsync(async (req, res) => {
             const user = await authService.loginWithToken(resp.data.data);
             res.status(httpStatus.CREATED).send({ user, token: user.generateAuthToken() });
         }
-        else
+        else {
+            console.log("error :", resp.data)
             throw new ApiError(httpStatus.UNAUTHORIZED, resp.data.message);
+        }
     });
 });

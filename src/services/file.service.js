@@ -75,11 +75,16 @@ const uploadFile = async (userId, file, is_compression) => {
  * @returns {Promise<Message>}
  */
 const getFileByConversation = async (conversationId, category, limit, offset) => {
+    const options = {
+        select: 'files',
+        offset,
+        limit
+    };
     const data = await Message.paginate(
         { conversation_id: conversationId, 'files.category': { "$in" : category } },
-        { select: 'files' ,offset, limit }
-    )
-    return data
+        options,
+    );
+    return data.docs;
 }
 
 module.exports = {

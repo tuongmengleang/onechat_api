@@ -21,7 +21,7 @@ exports.index = catchAsync(async (req, res) => {
 
         const { limit, offset } = getPagination(page, size);
 
-        await Message.paginate({ conversation_id: conversation_id }, { offset, limit, sort: { createdAt: 'desc' } })
+        await Message.paginate({ conversation_id }, { offset, limit, sort: { createdAt: 'desc' } })
             .then((result) => {
                 // update last messages list read_by
                 // if (result.docs.length > 0)
