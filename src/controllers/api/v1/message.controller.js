@@ -111,7 +111,7 @@ exports.create = catchAsync(async (req, res) => {
  */
 exports.sendToUser = catchAsync(async (req, res) => {
     const userId = req.params.userId;
-    const { author, text, link } = req.body;
+    const { author, text } = req.body;
     const sender = await userService.getUserByUserId(author)
     const receiver = await userService.getUserByUserId(userId)
     // ******* Check if exist user in mongodb
@@ -143,7 +143,7 @@ exports.sendToUser = catchAsync(async (req, res) => {
         conversation_id: conversation._id,
         author: user_sender ? user_sender._id : sender._id,
         text: text,
-        link: link,
+        link: '',
     })
     // emit socket new message
     global.io.emit("new message", message);

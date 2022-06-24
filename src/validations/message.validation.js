@@ -17,8 +17,7 @@ const sendInMessage = {
     }),
     body: Joi.object().keys({
         author: Joi.string().required(),
-        text: Joi.string(),
-        link: Joi.string()
+        text: Joi.string()
     })
 };
 
