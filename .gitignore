@@ -13,3 +13,9 @@ coverage
 
 # Optional npm cache directory
 .npm
+.vercel
+
+
+# Vercel
+.vercel
+vercel.json

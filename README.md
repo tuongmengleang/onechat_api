@@ -51,7 +51,7 @@ The environment variables can be found and modified in the `.env` file. They com
 PORT=5000
 
 # URL of the Mongo DB
-MONGODB_URL=mongodb://127.0.0.1:27017/onechat
+MONGODB_URI=mongodb://127.0.0.1:27017/onechat
 ```
 
 ## Project Structure
