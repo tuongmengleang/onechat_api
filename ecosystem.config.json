@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "chat-uvacancy-api",
+      "name": "apiChatUvacancy",
       "script": "src/index.js",
       "instances": 1,
       "autorestart": true,
