@@ -61,7 +61,7 @@ exports.create = catchAsync(async (req, res) => {
                 if (files && files.length > 0) {
                     const filesUploaded = await Promise.all(
                         files.map(file => {
-                            const data = fileService.uploadFile(req.user.user_id, file, is_compression)
+                            const data = fileService.uploadFile(req.user.user_id, file)
                             return data
                         })
                     )
