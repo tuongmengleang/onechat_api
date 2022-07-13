@@ -1,8 +1,11 @@
-const sharp = require('sharp');
+// const sharp = require('sharp');
+const fs = require('fs');
 const path = require('path');
 const s3Client = require('../config/minio');
 const config = require('../config/config');
 const Message = require('../models/Message');
+
+
 
 /**
  * Upload File to Minio S3
@@ -21,6 +24,37 @@ const videoExtensions = [
     '.mkv',
     '.avi'
 ];
+const currentTime = new Date();
+const currentYear = currentTime.getFullYear();
+const currentMonth = currentTime.getMonth() + 1;
+const uploadS3 = async (userId, file, type) => {
+    return new Promise(async (resolve, reject) => {
+        // const extname = file.originalFilename.toLowerCase()
+        const extension = file.originalFilename.slice((Math.max(0, file.originalFilename.lastIndexOf(".")) || Infinity) + 1);
+        const filename = file.originalFilename.replace(/\s/g, '-')
+        const buffer = fs.readFileSync(file.path);
+        // *** type = 1 (medias)
+        if (type ===  1) {
+            const objectName = userId + '/' + currentYear + '/' + currentMonth + '/' + 'media/' + `${Date.now()}-${filename}`;
+            await s3Client.putObject(config.minio.bucketName, objectName, buffer, (err, etag) => {
+                if (err)
+                    reject(err)
+                resolve({ src: objectName, name: filename, extension, size: file.size, category: 'media' })
+            })
+        }
+        else if (type === 2) {
+            const objectName = userId + '/' + currentYear + '/' + currentMonth + '/' + 'files/' + `${Date.now()}-${filename}`;
+            await s3Client.putObject(config.minio.bucketName, objectName, buffer, (err, etag) => {
+                if (err)
+                    reject(err)
+                resolve({ src: objectName, name: filename, extension, size: file.size, category: 'file' })
+            })
+        }
+
+    })
+}
+
+
 const uploadFile = async (userId, file) => {
     const currentTime = new Date();
     const currentYear = currentTime.getFullYear();
@@ -92,6 +126,7 @@ const getFileByConversation = async (conversationId, category, limit, offset) =>
 }
 
 module.exports = {
+    uploadS3,
     uploadFile,
     getFileByConversation
 };

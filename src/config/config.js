@@ -22,7 +22,9 @@ const envVarsSchema = Joi.object()
         SOCKET_ORIGIN_1: Joi.string().required().description('Socketio access origin url'),
         SOCKET_ORIGIN_2: Joi.string().required().description('Socketio access origin url'),
         CORS_ORIGIN: Joi.string().required().description('Cors origin access url'),
-        UVACANCY_ENDPOINT_URL: Joi.string().required().description('Uvacancy endpoint url')
+        UVACANCY_ENDPOINT_URL: Joi.string().required().description('Uvacancy endpoint url'),
+        MAX_FILE_VALIDATE_SIZE: Joi.string().required().description('MAX_FILE_VALIDATE_SIZE is required env'),
+        MAX_FILE_VALIDATE_LENGTH: Joi.string().required().description('MAX_FILE_VALIDATE_LENGTH is required env')
     }).unknown();
 
 const { value: envVars, error } = envVarsSchema.prefs({ errors: { label: 'key' } }).validate(process.env);
@@ -63,5 +65,9 @@ module.exports = {
     },
     uvacancy: {
         endpoint_url: envVars.UVACANCY_ENDPOINT_URL
+    },
+    file: {
+        max_size: envVars.MAX_FILE_VALIDATE_SIZE,
+        max_length: envVars.MAX_FILE_VALIDATE_LENGTH
     }
 };

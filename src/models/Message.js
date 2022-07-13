@@ -14,11 +14,13 @@ const messageSchema = new mongoose.Schema({
         size: Number,
         category: String
     }],
-    is_compression: { type: Number, default: 1 },
+    // is_compression: { type: Number, default: 1 },
     link: { type: String, max: 500 },
     delete_by: { type: Array },
     read_by: { type: Array },
-    is_read: { type: Boolean, default: false }
+    is_read: { type: Boolean, default: false },
+    type: { type: Number, default: 0 }
+    // type (0 = text), (1 = medias [images*, videos&, gif]), (2 = docs), (4 = voice), (5 = link)
 }, { timestamps: true });
 
 messageSchema.plugin(mongoosePaginate);

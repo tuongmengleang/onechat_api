@@ -1,5 +1,6 @@
 const httpStatus = require('http-status');
 const multer = require('multer');
+const multiparty = require('multiparty');
 const catchAsync = require('../../../utils/catchAsync');
 const Message = require('../../../models/Message');
 const getPagination = require('../../../utils/pagination');
@@ -8,6 +9,7 @@ const { messageService, conversationService, userService, fileService } = requir
 const { admin } = require('../../../config/firebase');
 const { convert } = require('html-to-text');
 const { unescapeHTML } = require('../../../utils/helpers');
+const config = require('../../../config/config')
 
 /**
  *  @desc   Get messages list
@@ -40,6 +42,54 @@ exports.index = catchAsync(async (req, res) => {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
 });
+
+/**
+ * @desc Create a new message
+ * @method POST api/v1/message
+ * @access Public
+ */
+exports.send = catchAsync(async (req, res) => {
+    const form = new multiparty.Form()
+    form.parse(req, async function (err, fields, files) {
+        // ****** Get FormData
+        console.log('fields :', fields)
+        console.log('files :', files)
+        const conversation_id = fields.conversation_id[0]
+        const author = fields.author[0]
+        const text = fields.text ? fields.text[0] : ''
+        const loading_id = fields.loading_id ? fields.loading_id[0] : null
+        const type = parseInt(fields.type[0])
+        const is_compression = fields.is_compression ? parseInt(fields.is_compression[0]) : null
+        // ****** Check Files upload length
+        const _files = files['files'] ? files['files'] : []
+        if (_files)
+            if (_files.length > config.file.max_length)
+                return res.status(httpStatus.BAD_REQUEST).send({ message: `Maximum files upload < ${config.file.max_length}` });
+            else {
+                const filesUploaded = await Promise.all(
+                    _files.map(file => {
+                        const data = fileService.uploadS3(req.user.user_id, file, type)
+                        return data
+                    })
+                )
+                const newMessage = new Message({
+                    conversation_id: conversation_id,
+                    author: author,
+                    text: unescapeHTML(text),
+                    files: filesUploaded,
+                    is_compression: is_compression,
+                    type: type,
+                    read_by: [req.user._id]
+                });
+                const _message = await newMessage.save();
+                let message = Object.assign({ loading_id }, _message._doc);
+                await conversationService.updateConversation(conversation_id);
+                // emit socket new message
+                global.io.emit("new message", message);
+                res.status(httpStatus.CREATED).json({ message: 'Successfully create message', data: message });
+            }
+    })
+})
 
 /**
  *  @desc   Store a new message
