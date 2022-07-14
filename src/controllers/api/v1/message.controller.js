@@ -52,8 +52,6 @@ exports.send = catchAsync(async (req, res) => {
     const form = new multiparty.Form()
     form.parse(req, async function (err, fields, files) {
         // ****** Get FormData
-        console.log('fields :', fields)
-        console.log('files :', files)
         const conversation_id = fields.conversation_id[0]
         const author = fields.author[0]
         const text = fields.text ? fields.text[0] : ''

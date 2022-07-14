@@ -19,9 +19,8 @@ const envVarsSchema = Joi.object()
         MINIO_ACCESS_KEY: Joi.string().required().description('Minio access key'),
         MINIO_SECRET_KEY: Joi.string().required().description('Minio secret key'),
         MINIO_BUCKET_NAME: Joi.string().required().description('Minio bucket name'),
-        SOCKET_ORIGIN_1: Joi.string().required().description('Socketio access origin url'),
-        SOCKET_ORIGIN_2: Joi.string().required().description('Socketio access origin url'),
-        CORS_ORIGIN: Joi.string().required().description('Cors origin access url'),
+        CORS_ORIGIN_1: Joi.string().required().description('Cors origin 1 is required'),
+        CORS_ORIGIN_2: Joi.string().required().description('Cors origin 2 is required'),
         UVACANCY_ENDPOINT_URL: Joi.string().required().description('Uvacancy endpoint url'),
         MAX_FILE_VALIDATE_SIZE: Joi.string().required().description('MAX_FILE_VALIDATE_SIZE is required env'),
         MAX_FILE_VALIDATE_LENGTH: Joi.string().required().description('MAX_FILE_VALIDATE_LENGTH is required env')
@@ -60,9 +59,7 @@ module.exports = {
     socketio: {
         origins: [ envVars.SOCKET_ORIGIN_1, envVars.SOCKET_ORIGIN_2 ]
     },
-    cors: {
-        origin: envVars.CORS_ORIGIN
-    },
+    cors: [envVars.CORS_ORIGIN_1, envVars.CORS_ORIGIN_2],
     uvacancy: {
         endpoint_url: envVars.UVACANCY_ENDPOINT_URL
     },

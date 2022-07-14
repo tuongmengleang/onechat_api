@@ -5,7 +5,7 @@ const config = require('./config/config');
 const logger = require('./config/logger');
 
 const server = require('http').createServer(app);
-const socketio = require('socket.io')(server, { cors: { origin: '*' } });
+const socketio = require('socket.io')(server, { cors: { origins: config.cors } });
 require('./utils/WebSockets')(socketio);
 
 // *** MongoDB Connection

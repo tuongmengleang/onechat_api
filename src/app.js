@@ -38,12 +38,12 @@ app.use(mongoSanitize());
 app.use(compression());
 
 // enable cors
-// app.use(cors({
-//     origin: config.cors.origin,
-//     optionsSuccessStatus: 200 // For legacy browser support
-// }));
-app.use(cors());
-app.options('*', cors());
+app.use(cors({
+    origin: config.cors,
+    optionsSuccessStatus: 200 // For legacy browser support
+}));
+// app.use(cors());
+// app.options('*', cors());
 
 // jwt authentication
 app.use(passport.initialize());

@@ -119,7 +119,11 @@ const getFileByConversation = async (conversationId, category, limit, offset) =>
         limit
     };
     const data = await Message.paginate(
-        { conversation_id: conversationId, 'files.category': { "$in" : category } },
+        {
+            conversation_id: conversationId,
+            'files.category': { "$in" : category } ,
+            'files.extension': { "$ne": 'gif' }
+        },
         options,
     );
     return data.docs;
