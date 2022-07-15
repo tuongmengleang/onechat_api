@@ -1,9 +1,29 @@
 const mongoose = require('mongoose');
+const { tokenTypes } = require('../config/tokens');
 
 const tokenSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
-    token: { type: String, required: true, index: true },
-    expires: { type: Date, required: true },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true, ref: 'User'
+    },
+    token: {
+        type: String,
+        required: true,
+        index: true
+    },
+    type: {
+        type: String,
+        enum: [tokenTypes.REFRESH],
+        required: true,
+    },
+    expires: {
+        type: Date,
+        required: true
+    },
+    blacklisted: {
+        type: Boolean,
+        default: false,
+    },
 }, { timestamps: true });
 
 /**
