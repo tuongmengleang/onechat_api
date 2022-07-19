@@ -36,8 +36,8 @@ const updateConversation = async (conversation_id) => {
 };
 
 /**
- * Find conversation by userId
- * @param {ObjectId} userId
+ * @param creator
+ * @param userId
  * @returns {Promise<Conversation>}
  */
 const findConversation = async (creator, userId) => {
@@ -49,6 +49,7 @@ const findConversation = async (creator, userId) => {
         })
     return result
 }
+
 
 /**
  * Count conversation unread message

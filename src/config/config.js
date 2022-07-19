@@ -13,7 +13,9 @@ const envVarsSchema = Joi.object()
         JWT_SECRET: Joi.string().required().description('JWT secret key'),
         JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(30).description('minutes after which access tokens expire'),
         JWT_REFRESH_EXPIRATION_DAYS: Joi.number().default(30).description('days after which refresh tokens expire'),
-        CRYPTO_SECRET_KEY: Joi.string().required().description('Secret key encrypt token'),
+        CRYPTO_SECRET_KEY: Joi.string().required().description('Crypto Secret key is required env'),
+        CRYPTO_KEY: Joi.string().required().description('Crypto key is required env'),
+        CRYPTO_IV: Joi.string().required().description('Crypto iv is required env'),
         MINIO_ENDPOINT: Joi.string().required().description('Minio endpoint'),
         MINIO_PORT: Joi.string().required().description('Minio port'),
         MINIO_ACCESS_KEY: Joi.string().required().description('Minio access key'),
@@ -23,7 +25,8 @@ const envVarsSchema = Joi.object()
         CORS_ORIGIN_2: Joi.string().required().description('Cors origin 2 is required'),
         UVACANCY_ENDPOINT_URL: Joi.string().required().description('Uvacancy endpoint url'),
         MAX_FILE_VALIDATE_SIZE: Joi.string().required().description('MAX_FILE_VALIDATE_SIZE is required env'),
-        MAX_FILE_VALIDATE_LENGTH: Joi.string().required().description('MAX_FILE_VALIDATE_LENGTH is required env')
+        MAX_FILE_VALIDATE_LENGTH: Joi.string().required().description('MAX_FILE_VALIDATE_LENGTH is required env'),
+        FILE_URI: Joi.string().required().description('File URI is required env')
     }).unknown();
 
 const { value: envVars, error } = envVarsSchema.prefs({ errors: { label: 'key' } }).validate(process.env);
@@ -48,7 +51,11 @@ module.exports = {
         accessExpirationMinutes: envVars.JWT_ACCESS_EXPIRATION_MINUTES,
         refreshExpirationDays: envVars.JWT_REFRESH_EXPIRATION_DAYS,
     },
-    crypto_secret_key: envVars.CRYPTO_SECRET_KEY,
+    crypto: {
+        secret_key: envVars.CRYPTO_SECRET_KEY,
+        key: envVars.CRYPTO_KEY,
+        iv: envVars.CRYPTO_IV
+    },
     minio: {
         endPoint: envVars.MINIO_ENDPOINT,
         port: envVars.MINIO_PORT,
@@ -65,6 +72,7 @@ module.exports = {
     },
     file: {
         max_size: envVars.MAX_FILE_VALIDATE_SIZE,
-        max_length: envVars.MAX_FILE_VALIDATE_LENGTH
+        max_length: envVars.MAX_FILE_VALIDATE_LENGTH,
+        uri: envVars.FILE_URI
     }
 };

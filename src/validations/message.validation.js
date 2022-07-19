@@ -1,3 +1,4 @@
+const { check } = require('express-validator');
 const Joi = require('joi');
 const { objectId } = require('./custom.validation');
 
@@ -27,12 +28,17 @@ const getMessage = {
     })
 };
 
-const pushNotification = {
-    body: Joi.object().keys({
-        registrationToken: Joi.string().required(),
-        text: Joi.string().required()
-    })
-};
+// const pushNotification = {
+//     body: Joi.object().keys({
+//         registrationToken: Joi.string().required(),
+//         text: Joi.string().required()
+//     })
+// };
+
+const pushNotification = [
+    check('author').not().isEmpty().withMessage("Author is required!"),
+    check('conversation_id').not().isEmpty().withMessage("Conversation Id is required!"),
+]
 
 module.exports = {
     createMessage,

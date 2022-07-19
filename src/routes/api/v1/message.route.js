@@ -12,8 +12,8 @@ router.get('/:conversation_id/latest', auth, validate(MessageValidation.getMessa
 router.get('/:conversation_id/unread', auth, validate(MessageValidation.getMessage), MessageController.unread)
 router.post('/', auth, MessageController.send)
 router.post('/:userId', validate(MessageValidation.sendInMessage), MessageController.sendToUser)
-router.post('/notification', auth, MessageController.notification)
-router.put('/:message_id', auth, MessageController.update);
+router.post('/push/notification', auth ,MessageController.notification)
+router.put('/:message_id', auth, MessageController.update)
 
 module.exports = router;
 

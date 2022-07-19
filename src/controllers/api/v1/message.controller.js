@@ -5,11 +5,12 @@ const catchAsync = require('../../../utils/catchAsync');
 const Message = require('../../../models/Message');
 const getPagination = require('../../../utils/pagination');
 const ApiError = require('../../../utils/ApiError');
-const { messageService, conversationService, userService, fileService } = require('../../../services');
+const { messageService, conversationService, userService, fileService, notificationService } = require('../../../services');
 const { admin } = require('../../../config/firebase');
 const { convert } = require('html-to-text');
 const { unescapeHTML } = require('../../../utils/helpers');
 const config = require('../../../config/config')
+const Conversation = require("../../../models/Conversation");
 
 /**
  *  @desc   Get messages list
@@ -75,7 +76,6 @@ exports.send = catchAsync(async (req, res) => {
                     author: author,
                     text: unescapeHTML(text),
                     files: filesUploaded,
-                    is_compression: is_compression,
                     type: type,
                     read_by: [req.user._id]
                 });
@@ -84,6 +84,14 @@ exports.send = catchAsync(async (req, res) => {
                 await conversationService.updateConversation(conversation_id);
                 // emit socket new message
                 global.io.emit("new message", message);
+                // push notification message
+                notificationService.pushNotification({
+                    text: message.text,
+                    author: message.author,
+                    conversation_id: message.conversation_id,
+                    type: message.type
+                })
+
                 res.status(httpStatus.CREATED).json({ message: 'Successfully create message', data: message });
             }
     })
@@ -277,29 +285,34 @@ exports.unread = catchAsync(async (req, res) => {
  *  @access Public
  */
 exports.notification = catchAsync(async (req, res) => {
+    const { text, author, conversation_id } = req.body;
     const options = {
         priority: "high",
         timeToLive: 60 * 60 * 24,
     };
-    const { registrationToken, text, author } = req.body;
 
+    const conversation = await Conversation.findOne({ conversation_id }).populate({
+        path: "participants",
+        model: "User"
+    })
+    const participants = conversation.participants
+    const participant = participants.find(p => p._id.toString() !== author)
     const user = await userService.getUserById(author);
-    // const registrationToken = user ? user.device_id : ''
-    // res.send({ registrationToken, text, author })
+    console.log('user:', user)
+
     const message = {
         notification: {
             title: user ? user.full_name : '',
             body: convert(text),
-            icon: user ? user.image : '',
+            icon: user ? 'https://s3.uvacancy.com/uvacancy-dev/' + user.image : '',
             sound: 'default'
-        },
+        }
     };
-
-    admin.messaging().sendToDevice(registrationToken, message, options)
-        .then(response => {
-            res.send(response)
+    await admin.messaging().sendToDevice(participant.device_tokens, message, options)
+        .then((resp) => {
+            res.send(resp)
         })
-        .catch(error => {
-            console.info(error)
+        .catch((error) => {
+            res.status(httpStatus.BAD_REQUEST).send({ message: error.message })
         })
 });

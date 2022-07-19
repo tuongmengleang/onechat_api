@@ -14,14 +14,14 @@ const getUsers = {
 };
 
 const updateUser = {
-    params: Joi.object().keys({
-        userId: Joi.required().custom(objectId),
-    }),
+    // params: Joi.object().keys({
+    //     userId: Joi.required().custom(objectId),
+    // }),
     body: Joi.object()
         .keys({
             first_name: Joi.string(),
             last_name: Joi.string(),
-            device_id: Joi.string()
+            device_token: Joi.string()
         })
         .min(1),
 };
