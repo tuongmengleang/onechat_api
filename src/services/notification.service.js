@@ -1,6 +1,5 @@
 const Conversation = require("../models/Conversation");
 const { userService } = require("./index");
-const { convert } = require("html-to-text");
 const { admin } = require("../config/firebase");
 const config = require("../config/config");
 const { decrypt } = require("../utils/crypto");
@@ -30,9 +29,10 @@ const pushNotification = async ({ text, author, conversation_id, type }) => {
         const message = {
             notification: {
                 title: user ? user.full_name : '',
-                body: type === 0 ? decrypt(text) : 'Send files',
+                body: type === 0 ? decrypt(text) : type === 1 ? 'Send Photos' : 'Send Files',
                 icon: user ? config.file.uri + user.image : '',
-                sound: 'default'
+                sound: 'default',
+                clickAction: config.cors[0]
             }
         };
         await admin.messaging().sendToDevice(participant.device_token, message, options)
