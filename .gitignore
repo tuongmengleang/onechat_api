@@ -13,3 +13,6 @@ coverage
 
 # Optional npm cache directory
 .npm
+.idea
+.vercel
+.vscode
