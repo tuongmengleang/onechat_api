@@ -15,5 +15,6 @@ router.get('/me', auth, UserController.me)
 router.route('/:userId')
     .get(auth, validate(UserValidation.getUser), UserController.getUser)
     .put(auth, validate(UserValidation.updateUser), UserController.updateUser)
+    .post(UserController.realtime)
 
 module.exports = router;

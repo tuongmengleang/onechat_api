@@ -27,7 +27,6 @@ exports.login = catchAsync(async (req, res) => {
             res.status(httpStatus.CREATED).send({ user, access_token: tokens.access_token, refresh_token: tokens.refresh_token });
         }
         else {
-            console.log("error :", resp.data)
             throw new ApiError(httpStatus.UNAUTHORIZED, resp.data.message);
         }
     });

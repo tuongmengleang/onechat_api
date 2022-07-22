@@ -11,6 +11,8 @@ const { convert } = require('html-to-text');
 const { unescapeHTML } = require('../../../utils/helpers');
 const config = require('../../../config/config')
 const Conversation = require("../../../models/Conversation");
+const UserList = require('../../../utils/users');
+const userList = new UserList();
 
 /**
  *  @desc   Get messages list
@@ -58,7 +60,7 @@ exports.send = catchAsync(async (req, res) => {
         const text = fields.text ? fields.text[0] : ''
         const loading_id = fields.loading_id ? fields.loading_id[0] : null
         const type = parseInt(fields.type[0])
-        const is_compression = fields.is_compression ? parseInt(fields.is_compression[0]) : null
+        // const is_compression = fields.is_compression ? parseInt(fields.is_compression[0]) : null
         // ****** Check Files upload length
         const _files = files['files'] ? files['files'] : []
         if (_files)
@@ -83,7 +85,9 @@ exports.send = catchAsync(async (req, res) => {
                 let message = Object.assign({ loading_id }, _message._doc);
                 await conversationService.updateConversation(conversation_id);
                 // emit socket new message
-                global.io.emit("new message", message);
+
+                // global.io.emit("new message", message);
+                global.io.in(message.conversation_id.toString()).emit("new message", message)
                 // push notification message
                 notificationService.pushNotification({
                     text: message.text,
@@ -298,7 +302,6 @@ exports.notification = catchAsync(async (req, res) => {
     const participants = conversation.participants
     const participant = participants.find(p => p._id.toString() !== author)
     const user = await userService.getUserById(author);
-    console.log('user:', user)
 
     const message = {
         notification: {

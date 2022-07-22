@@ -1,6 +1,7 @@
 const _ = require('lodash');
+const UserList = require('../utils/users');
 const { userService, messageService } = require('../services');
-const users = [];
+const userList = new UserList();
 
 module.exports = (io) => {
     global.io = io;
@@ -8,24 +9,20 @@ module.exports = (io) => {
     io.on('connection', (socket) => {
         global.socket = socket;
 
+        socket.on('subscribe', (data) => {
+            socket.join(data)
+        })
+
         // ======= LISTEN USER ONLINE =======
         socket.on('online', (userId) => {
-            // CHECK IS USER EXIST
-            if (!users[userId]) users[userId] = []
-            // PUSH SOCKET ID FOR PARTICULAR USER ID
-            users[userId].push(socket.id)
+            userList.addUser(userId, socket.id)
             socket.userId = userId
             userService.updateUserActive(userId, true);
         });
 
         // ======= LISTEN USER OFFLINE =======
-        socket.on('offline', userId => {
-            _.remove(users[userId], (u) => u === socket.id)
-            if (users[socket.userId]) {
-                userService.updateUserActive(socket.userId, false)
-                // console.log('socket.userId :', socket.userId);
-                delete users[socket.userId];
-            }
+        socket.on('offline', async (userId) => {
+            await userList.deleteUser(userId, socket.id)
         });
 
         socket.on('user-typing', (data) => {
@@ -49,17 +46,8 @@ module.exports = (io) => {
         });
 
         // ======= LISTEN USER DISCONNECTED =======
-        socket.on('disconnect', () => {
-            // UPDATE USER ONLINE STATUS
-            _.remove(users[socket.userId], (u) => u === socket.id)
-            if (users[socket.userId] && users[socket.userId].length === 0) {
-                // USER IS OFFLINE BROAD CAST TO ALL CONNECTED USERS
-                // console.log('userId :', socket.userId)
-                userService.updateUserActive(socket.userId, false)
-                // REMOVE OBJECT
-                // console.log('user offline is :', socket.userId)
-                delete users[socket.userId];
-            }
+        socket.on('disconnect', async () => {
+            await userList.deleteUser(socket.userId, socket.id)
             socket.disconnect(); // DISCONNECT SOCKET
         });
 

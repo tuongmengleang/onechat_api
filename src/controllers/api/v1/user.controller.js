@@ -151,3 +151,14 @@ exports.updateUser = catchAsync(async (req, res) => {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
 });
+
+
+exports.realtime = catchAsync(async (req, res) => {
+    try {
+        const userId = req.params.userId
+        global.io.to(userId).emit("new-emit");
+        res.send(userId)
+    } catch (error) {
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
+    }
+})
