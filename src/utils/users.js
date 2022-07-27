@@ -14,12 +14,6 @@ module.exports = class UserList {
 
     async deleteUser(userId, socketId) {
         _.remove(this.users[userId], (u) => u === socketId)
-        if (this.users[userId] && this.users[userId].length === 0) {
-            // USER IS OFFLINE BROAD CAST TO ALL CONNECTED USERS
-            await userService.updateUserActive(userId, false)
-            // REMOVE OBJECT
-            delete this.users[userId];
-        }
     }
 
 

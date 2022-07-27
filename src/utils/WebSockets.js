@@ -14,15 +14,16 @@ module.exports = (io) => {
         })
 
         // ======= LISTEN USER ONLINE =======
-        socket.on('online', (userId) => {
+        socket.on('online', async (userId) => {
             userList.addUser(userId, socket.id)
             socket.userId = userId
-            userService.updateUserActive(userId, true);
+            await userService.updateUserActive(userId, true);
         });
 
         // ======= LISTEN USER OFFLINE =======
         socket.on('offline', async (userId) => {
             await userList.deleteUser(userId, socket.id)
+            await userService.updateUserActive(userId, false)
         });
 
         socket.on('user-typing', (data) => {
@@ -37,7 +38,7 @@ module.exports = (io) => {
             socket.connect();
         });
 
-        socket.on('reconnect_error', function(obj) {
+        socket.on('reconnect_error', function() {
             socket.connect();
         });
 
@@ -48,6 +49,12 @@ module.exports = (io) => {
         // ======= LISTEN USER DISCONNECTED =======
         socket.on('disconnect', async () => {
             await userList.deleteUser(socket.userId, socket.id)
+            if (userList.users[socket.userId] && userList.users[socket.userId].length === 0) {
+                // USER IS OFFLINE BROAD CAST TO ALL CONNECTED USERS
+                await userService.updateUserActive(socket.userId, false)
+                // REMOVE OBJECT
+                delete userList.users[socket.userId];
+            }
             socket.disconnect(); // DISCONNECT SOCKET
         });
 
