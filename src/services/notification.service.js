@@ -24,7 +24,7 @@ const pushNotification = async ({ text, author, conversation_id, type }) => {
     const participant = participants.find(p => p._id.toString() !== author)
     const user = await userService.getUserById(author);
 
-    if (participant.fcm_tokens) {
+    if (participant.fcm_tokens && participant.fcm_tokens.length > 0) {
         const message = {
             notification: {
                 title: user ? user.full_name : '',
