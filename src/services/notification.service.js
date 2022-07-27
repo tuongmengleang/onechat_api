@@ -23,9 +23,8 @@ const pushNotification = async ({ text, author, conversation_id, type }) => {
     const participants = conversation.participants
     const participant = participants.find(p => p._id.toString() !== author)
     const user = await userService.getUserById(author);
-    // console.log('participant :', participant)
 
-    if (participant.device_token) {
+    if (participant.fcm_tokens) {
         const message = {
             notification: {
                 title: user ? user.full_name : '',
@@ -35,7 +34,7 @@ const pushNotification = async ({ text, author, conversation_id, type }) => {
                 clickAction: config.cors[0]
             }
         };
-        await admin.messaging().sendToDevice(participant.device_token, message, options)
+        await admin.messaging().sendToDevice(participant.fcm_tokens, message, options)
         // .then((resp) => {
         //     console.log('resp :', resp)
         // })

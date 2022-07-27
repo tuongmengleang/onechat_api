@@ -145,20 +145,14 @@ exports.getUsers = catchAsync(async (req, res) => {
  */
 exports.updateUser = catchAsync(async (req, res) => {
     try {
-        const user = await userService.updateUserById(req.params.userId, req.body);
-        res.send(user);
+        const update = {
+            first_name: req.body.first_name,
+            last_name: req.body.last_name,
+            $addToSet: { fcm_tokens: req.body.fcm_token }
+        }
+        const user = await User.findOneAndUpdate({ _id: req.params.userId }, update, { new: true });
+        res.status(httpStatus.OK).json(user)
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
     }
 });
-
-
-exports.realtime = catchAsync(async (req, res) => {
-    try {
-        const userId = req.params.userId
-        global.io.to(userId).emit("new-emit");
-        res.send(userId)
-    } catch (error) {
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
-    }
-})
