@@ -7,6 +7,7 @@ const router = express.Router();
 
 // router.post('/login', validate(authValidation.login), authController.login);
 router.post('/login', authValidation.login, validator, authController.login);
+router.post('/mobile/login', authValidation.loginUsernamePasword, validator, authController.loginUsernamePassword);
 router.post('/refresh', authValidation.refresh, validator, authController.refresh);
 
 module.exports = router;

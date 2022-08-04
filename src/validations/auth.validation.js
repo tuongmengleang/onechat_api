@@ -8,11 +8,22 @@ const { check } = require('express-validator');
 //     })
 // };
 
-exports.login = [
+const login = [
     check('access_token').not().isEmpty().withMessage("Access token is required!"),
     check('token').not().isEmpty().withMessage("Token is required!"),
 ]
 
-exports.refresh = [
+const loginUsernamePasword = [
+    check('username').not().isEmpty().withMessage("Username is required!"),
+    check('password').not().isEmpty().withMessage("Password is required!"),
+]
+
+const refresh = [
     check('refresh_token').not().isEmpty().withMessage("Refresh token is required!"),
 ]
+
+module.exports = {
+    login,
+    loginUsernamePasword,
+    refresh
+};

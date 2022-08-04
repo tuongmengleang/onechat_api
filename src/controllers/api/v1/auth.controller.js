@@ -3,7 +3,7 @@ const httpStatus = require('http-status');
 const ApiError = require('../../../utils/ApiError');
 const catchAsync = require('../../../utils/catchAsync');
 const { authService, tokenService } = require('../../../services');
-const { decrypt } = require('../../../utils/crypto');
+const { encrypt, decrypt } = require('../../../utils/crypto');
 const config = require('../../../config/config');
 
 /**
@@ -31,6 +31,35 @@ exports.login = catchAsync(async (req, res) => {
         }
     });
 });
+
+/**
+ * @desc Login user with email/phone, password
+ * @method POST
+ * @access Public
+ */
+exports.loginUsernamePassword = catchAsync(async (req, res) => {
+    const { username, password } = req.body;
+    
+    await axios.post(`${config.uvacancy.endpoint_url}/api/v1/login`, {
+        username, password
+    }, {
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
+    }).then(resp => {
+        if (resp.data.code === 200) 
+            res.status(httpStatus.OK).json({
+                user: resp.data.data.data,
+                access_token: encrypt(resp.data.data.access_token),
+                token: encrypt(resp.data.data.token)
+            })
+        else res.status(httpStatus.BAD_REQUEST).json(resp.data)
+    }).catch(error => {
+        res.status(httpStatus.BAD_REQUEST).json({ message: error.message })
+    })
+
+})
 
 /**
  * @desc Refresh token of yser
