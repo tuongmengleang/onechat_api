@@ -40,7 +40,8 @@ app.use(compression());
 
 // enable cors
 app.use(cors({
-    origin: config.cors,
+    // origin: config.cors,
+    origin: '*',
     optionsSuccessStatus: 200 // For legacy browser support
 }));
 // app.use(cors());
