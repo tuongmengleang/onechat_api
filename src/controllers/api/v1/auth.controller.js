@@ -12,12 +12,15 @@ const config = require('../../../config/config');
  *  @access Public
  */
 exports.login = catchAsync(async (req, res) => {
-    const { access_token, token } = req.body;
+    const { token } = req.body;
 
-    await axios.post(`${config.uvacancy.endpoint_url}/api/v1/profile/info`, {}, {
+    await axios.post(`${config.uvacancy.endpoint_url}/api/v2/profile/get-user-info`, {}, {
+        // headers: {
+        //     'Authorization': `Bearer ${decrypt(access_token).replace(/['"]+/g, '')}`,
+        //     'token': decrypt(token).replace(/['"]+/g, '')
+        // }
         headers: {
-            'Authorization': `Bearer ${decrypt(access_token).replace(/['"]+/g, '')}`,
-            'token': decrypt(token).replace(/['"]+/g, '')
+            'Authorization': `Bearer ${token.replace(/['"]+/g, '')}`
         }
     }).then(async (resp) => {
         if (resp.data.code === 200) {
@@ -39,7 +42,7 @@ exports.login = catchAsync(async (req, res) => {
  */
 exports.loginUsernamePassword = catchAsync(async (req, res) => {
     const { username, password } = req.body;
-    
+
     await axios.post(`${config.uvacancy.endpoint_url}/api/v1/login`, {
         username, password
     }, {
@@ -48,7 +51,7 @@ exports.loginUsernamePassword = catchAsync(async (req, res) => {
             "Content-Type": "application/json"
         }
     }).then(resp => {
-        if (resp.data.code === 200) 
+        if (resp.data.code === 200)
             res.status(httpStatus.OK).json({
                 user: resp.data.data.data,
                 access_token: encrypt(resp.data.data.access_token),

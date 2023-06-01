@@ -9,7 +9,7 @@ const { check } = require('express-validator');
 // };
 
 const login = [
-    check('access_token').not().isEmpty().withMessage("Access token is required!"),
+    // check('access_token').not().isEmpty().withMessage("Access token is required!"),
     check('token').not().isEmpty().withMessage("Token is required!"),
 ]
 
