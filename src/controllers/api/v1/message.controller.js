@@ -319,3 +319,18 @@ exports.notification = catchAsync(async (req, res) => {
             res.status(httpStatus.BAD_REQUEST).send({ message: error.message })
         })
 });
+
+/**
+ * Delete Message by conversation_id
+ * @param {ObjectId} conversation_id
+ * @returns {Promise<Messages>}
+ */
+exports.deleteMessage = catchAsync(async (req, res) => {
+    try {
+        const conversation_id = req.params.conversation_id;
+        const message = await Message.deleteMany({ age: { $gte: 30 } })
+        res.json(message)
+    } catch (error) {
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
+    }
+})

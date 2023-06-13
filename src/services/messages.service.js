@@ -62,5 +62,5 @@ module.exports = {
     createMessage,
     updateMessageReadUnread,
     latestMessage,
-    unreadCount
+    unreadCount,
 };

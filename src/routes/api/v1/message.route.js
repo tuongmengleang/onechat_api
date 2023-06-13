@@ -14,6 +14,7 @@ router.post('/', auth, MessageController.send)
 router.post('/:userId', validate(MessageValidation.sendInMessage), MessageController.sendToUser)
 router.post('/push/notification', auth ,MessageController.notification)
 router.put('/:message_id', auth, MessageController.update)
+router.post('/:conversation_id/delete', auth, MessageController.deleteMessage)
 
 module.exports = router;
 
