@@ -3,6 +3,7 @@ node_modules
 
 # Use yarn.lock instead
 package-lock.json
+yarn.lock
 
 # Environment varibales
 .env*
