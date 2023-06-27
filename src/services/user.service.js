@@ -10,10 +10,10 @@ const config = require('../config/config');
  * @returns {Promise<User>}
  */
 const createUser = async (userBody) => {
-    if (await User.isUserTaken(userBody.user_id)) {
-        throw new ApiError(httpStatus.BAD_REQUEST, 'User already taken');
-    }
-    return await User.create(userBody);
+  // if (await User.isUserTaken(userBody.user_id)) {
+  //   throw new ApiError(httpStatus.BAD_REQUEST, 'User already taken');
+  // }
+  return User.create(userBody);
 };
 
 /**
@@ -22,26 +22,21 @@ const createUser = async (userBody) => {
  * @returns {Promise<User>}
  */
 const fetchUserFromUvacancy = async (user_name) => {
-    const resp = await axios.post(`${config.uvacancy.endpoint_url}/api/v1/get-profile`, {
-        user_name: user_name
-    })
-    return resp.data.data
+  const resp = await axios.post(`${config.uvacancy.endpoint_url}/api/v1/get-profile`, {
+    user_name: user_name,
+  });
+  return resp.data.data;
 };
 
 /**
  * Query for users
- * @param {Object} filter - Mongo filter
- * @param {Object} options - Query options
- * @returns {Promise<QueryResult>}
+ * @returns {Promise<*[]>}
+ * @param name
  */
 const queryUsers = async (name) => {
-    if (name) {
-        const users = await User.aggregate(
-            [ { $match : { full_name : "Kong" } } ]
-        );
-        return users;
-    }
-    else return [];
+  if (name) {
+    return User.aggregate([{ $match: { full_name: 'Kong' } }]);
+  } else return [];
 };
 
 /**
@@ -50,7 +45,7 @@ const queryUsers = async (name) => {
  * @returns {Promise<User>}
  */
 const getUserById = async (id) => {
-    return User.findById(id);
+  return User.findById(id);
 };
 
 /**
@@ -59,18 +54,18 @@ const getUserById = async (id) => {
  * @returns {Promise<User>}
  */
 const getUserByUserId = async (user_id) => {
-    return User.findOne({user_id});
+  return User.findOne({ user_id });
 };
 
 /**
  * Update user status active (online)
- * @param {ObjectId} _id
+ * @param userId
  * @param {Boolean} is_active
  * @returns {Promise<User>}
  */
 const updateUserActive = async (userId, is_active) => {
-    const user = await User.findOneAndUpdate({ user_id: userId }, { is_active: is_active, last_active: Date.now() });
-    if (user) global.io.emit('active-user', { userId: user._id, status: is_active});
+  const user = await User.findOneAndUpdate({ user_id: userId }, { is_active: is_active, last_active: Date.now() });
+  if (user) global.io.emit('active-user', { userId: user._id, status: is_active });
 };
 
 /**
@@ -79,35 +74,34 @@ const updateUserActive = async (userId, is_active) => {
  * @param {Object} updateBody
  * @returns {Promise<User>}
  */
-const updateUserById = async (userId, payload, callback) => {
-    const user = await getUserById(userId);
-    if (!user) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-    }
+const updateUserById = async (userId) => {
+  const user = await getUserById(userId);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
 
-    Object.assign(user, updateBody);
-    await user.save();
-    return user;
+  Object.assign(user, updateBody);
+  await user.save();
+  return user;
 };
 
 /**
  * Update user info
- * @param {ObjectId} user_id
  * @returns {Promise<User>}
+ * @param userId
+ * @param update
  */
-const updateUser = async (userId, update) => {
-    const _user = await User.findOneAndUpdate({ user_id: userId }, update);
-    return _user
+const updateUser = (userId, update) => {
+  return User.findOneAndUpdate({ user_id: userId }, update);
 };
 
-
 module.exports = {
-    createUser,
-    fetchUserFromUvacancy,
-    queryUsers,
-    getUserById,
-    getUserByUserId,
-    updateUserActive,
-    updateUserById,
-    updateUser,
+  createUser,
+  fetchUserFromUvacancy,
+  queryUsers,
+  getUserById,
+  getUserByUserId,
+  updateUserActive,
+  updateUserById,
+  updateUser,
 };

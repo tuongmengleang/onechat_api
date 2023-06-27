@@ -7,36 +7,31 @@ const { tokenTypes } = require('../config/tokens');
 
 /**
  * Login with user_id
- * @param {string} user_id
  * @returns {Promise<User>}
+ * @param data
  */
 const loginWithToken = async (data) => {
-    const user = await User.findOne({ user_id: data.user_name });
-    const imageSize = 'medium';
-    // Update User
-    if (user) {
-        let update = {
-            first_name: data.first_name ? data.first_name : null,
-            last_name: data.last_name ? data.last_name : null,
-            email: data.email ? data.email : null,
-            phone: data.phone_number ? data.phone_number : null,
-            image: data.picture_folder && data.picture_file_name ? data.picture_folder + `/${imageSize}/` + data.picture_file_name : null
-        };
-        const _user = await userService.updateUser(data.user_name, update)
-        return _user
-    }
-    // Create User
-    else {
-        const newUser = await userService.createUser({
-            user_id: data.user_name ? data.user_name : null,
-            first_name: data.first_name ? data.first_name : null,
-            last_name: data.last_name ? data.last_name : null,
-            email: data.email ? data.email : null,
-            phone: data.phone_number ? data.phone_number : null,
-            image: data.picture_folder && data.picture_file_name ? data.picture_folder + `/${imageSize}/` + data.picture_file_name : null
-        });
-        return newUser;
-    }
+  const user = await User.findOne({ user_id: data.username });
+  // Update User
+  if (user) {
+    let update = {
+      first_name: data.first_name ? data.first_name : null,
+      last_name: data.last_name ? data.last_name : null,
+      email: data.email ? data.email : null,
+      image: data?.current_employee?.file_info?.file_url,
+    };
+    return await userService.updateUser(data.username, update);
+  }
+  // Create User
+  else {
+    return await userService.createUser({
+      user_id: data.username ?? null,
+      first_name: data.first_name ?? null,
+      last_name: data.last_name ?? null,
+      email: data.email ?? null,
+      image: data?.current_employee?.file_info?.file_url,
+    });
+  }
 };
 
 /**
@@ -45,21 +40,20 @@ const loginWithToken = async (data) => {
  * @returns {Promise<Object>}
  */
 const refreshAuth = async (refreshToken) => {
-    try {
-        const refreshTokenDoc = await tokenService.verifyToken(refreshToken, tokenTypes.REFRESH);
-        const user = await userService.getUserById(refreshTokenDoc.user);
-        if (!user) {
-            throw new Error();
-        }
-        await refreshTokenDoc.remove();
-        return tokenService.generateAuthTokens(user);
-    } catch (error) {
-        throw new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate');
+  try {
+    const refreshTokenDoc = await tokenService.verifyToken(refreshToken, tokenTypes.REFRESH);
+    const user = await userService.getUserById(refreshTokenDoc.user);
+    if (!user) {
+      throw new Error();
     }
+    await refreshTokenDoc.remove();
+    return tokenService.generateAuthTokens(user);
+  } catch (error) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate');
+  }
 };
 
 module.exports = {
-    loginWithToken,
-    refreshAuth
+  loginWithToken,
+  refreshAuth,
 };
-
